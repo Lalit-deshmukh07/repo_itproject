@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------------
+# Replace service-a / service-b with your actual service names.
+# Add a database service if your project needs one (see commented example).
+# Run everything with:  docker compose up --build
+# ---------------------------------------------------------------------------
+
+services:
+
+  service-a:
+    build: ./services/service-a
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    # depends_on:
+    #   - db
+
+  service-b:
+    build: ./services/service-b
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - SERVICE_A_URL=http://service-a:8000
+
+  # Uncomment and configure a database when you need one:
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: ${DB_USER}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
+  #     POSTGRES_DB: ${DB_NAME}
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+
+# volumes:
+#   pgdata:
