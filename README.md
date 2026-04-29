@@ -6,8 +6,8 @@
 
 | Role | Name |
 |---|---|
-| Product Owner | |
-| Scrum Master | lalit |
+| Product Owner | lalit |
+| Scrum Master | kg|
 | Developer | |
 | Developer | |
 | Developer | |
