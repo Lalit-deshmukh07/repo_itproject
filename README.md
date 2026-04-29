@@ -7,7 +7,7 @@
 | Role | Name |
 |---|---|
 | Product Owner | lalit |
-| Scrum Master |  |
+| Scrum Master | Sandrin |
 | Developer | |
 | Developer | |
 | Developer | |
