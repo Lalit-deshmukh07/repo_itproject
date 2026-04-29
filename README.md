@@ -1,18 +1,16 @@
-# repo_itproject
-
 # Project Name
 
 > One-sentence description of what this project does and who it is for.
 
 ## Team
 
-| Role | NickName | Name |
-|---|---|---|
-| Team Leader | Q | Not anymore |
-| Team Member 1 | Lalit | Lalit Deshmukh |
-| Team Member 2 | Brinda | Akula Vaishnavi |
-| Team Member 3 | Sandy | Wihbedimbom Sandrin |
-| Team Member 4 | dj | David John Espiritu |
+| Role | Name |
+|---|---|
+| Product Owner | lalit |
+| Scrum Master |  |
+| Developer | |
+| Developer | |
+| Developer | |
 
 ## Project Overview
 

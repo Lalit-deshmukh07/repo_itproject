@@ -1,0 +1,39 @@
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.pyc
+
+# Node / JavaScript
+node_modules/
+npm-debug.log*
+yarn-error.log
+.pnp/
+.pnp.js
+.next/
+.nuxt/
+dist/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# OS
+.DS_Store
