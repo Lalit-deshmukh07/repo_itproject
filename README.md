@@ -7,7 +7,11 @@
 | Role | Name |
 |---|---|
 | Product Owner | lalit |
+<<<<<<< HEAD
 | Scrum Master | kg|
+=======
+| Scrum Master |  |
+>>>>>>> 4ebea63a049dcecf294a030bbe7865074a0f3056
 | Developer | |
 | Developer | |
 | Developer | |
