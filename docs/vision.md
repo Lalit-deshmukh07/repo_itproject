@@ -10,7 +10,7 @@ _Due: Session 5 — 05 May_
 > **Who** [want a quick and easy restaraunt options nearby]  
 > **Our product** [UniBite]  
 > **Is a** [Web-based restaurant finder]  
-> **That** [hepls discover restaurants within 15 km using filters like cuisine, distance, and rating]  
+> **That** [helps discover restaurants within 15 km using filters like cuisine, distance, and rating]  
 > **Unlike** [Google Maps or Yelp]  
 > **Our product** [is simple , fast, and tailored for student and staff needs]
 

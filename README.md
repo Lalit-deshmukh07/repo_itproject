@@ -6,7 +6,7 @@
 
 | Role | Name |
 |---|---|
-| Product Owner | are you sure |
+| Product Owner | Lalit |
 | Scrum Master | brinda|
 | Scrum Master | Sandrin |
 | Developer |dj |
