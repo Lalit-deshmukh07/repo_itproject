@@ -10,7 +10,7 @@
 | Scrum Master | Brinda|
 | Scrum Master | sindren |
 | Developer |dj |
-| Developer | |
+| Developer |grishma |
 | Developer | |
 
 ## Project Overview
