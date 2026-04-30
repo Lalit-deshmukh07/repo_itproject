@@ -6,7 +6,7 @@ _Due: Session 5 — 05 May_
 
 ## Vision Statement
 
-> **For** [target users]  
+> **For** [University students and staff]  
 > **Who** [have this problem / need]  
 > **Our product** [product name]  
 > **Is a** [category]  
