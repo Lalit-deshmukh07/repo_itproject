@@ -8,7 +8,7 @@ _Due: Session 5 — 05 May_
 
 > **For** [University students and staff]  
 > **Who** [want a quick and easy restaraunt options nearby]  
-> **Our product** [UniBite]  
+> **Our product** [UniBite Resto ]  
 > **Is a** [Web-based restaurant finder]  
 > **That** [hepls discover restaurants within 15 km using filters like cuisine, distance, and rating]  
 > **Unlike** [Google Maps or Yelp]  
