@@ -9,7 +9,7 @@
 | Product Owner | lalit |
 | Scrum Master | brinda|
 | Scrum Master | sindren |
-| Developer |Dj |
+| Developer |dj |
 | Developer | |
 | Developer | |
 
