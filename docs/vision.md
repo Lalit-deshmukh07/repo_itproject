@@ -8,11 +8,11 @@ _Due: Session 5 — 05 May_
 
 > **For** [University students and staff]  
 > **Who** [want a quick and easy restaraunt options nearby]  
-> **Our product** [product name]  
-> **Is a** [category]  
-> **That** [key benefit / reason to use it]  
-> **Unlike** [current alternative]  
-> **Our product** [key differentiator]
+> **Our product** [UniBite]  
+> **Is a** [Web-based restaurant finder]  
+> **That** [hepls discover restaurants within 15 km using filters like cuisine, distance, and rating]  
+> **Unlike** [Google Maps or Yelp]  
+> **Our product** [is simple , fast, and tailored for student and staff needs]
 
 ---
 
