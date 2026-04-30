@@ -6,11 +6,17 @@
 
 | Role | Name |
 |---|---|
+feature/add-Sandrin
+| Product Owner | lalit |
+| Scrum Master | Sandrin |
+| Developer | |
+| Developer | |
 | Product Owner | are you sure |
 | Scrum Master | brinda|
 | Scrum Master | Sandrin |
 | Developer |dj |
 | Developer |Greshma |
+main
 | Developer | |
 
 ## Project Overview
