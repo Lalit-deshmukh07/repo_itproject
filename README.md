@@ -7,7 +7,7 @@
 | Role | Name |
 |---|---|
 | Product Owner | lalit |
-| Scrum Master | brinda|
+| Scrum Master | Brinda|
 | Scrum Master | sindren |
 | Developer |dj |
 | Developer | |
