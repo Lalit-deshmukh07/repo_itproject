@@ -9,7 +9,7 @@
 | Product Owner | are you sure |
 | Scrum Master | brinda|
 | Scrum Master | sindren |
-| Developer |dj |
+| Developer |djzespiritu|
 | Developer |grishma |
 | Developer | |
 
