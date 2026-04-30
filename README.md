@@ -11,8 +11,7 @@
 | Scrum Master | Sandrin |
 | Developer |dj |
 | Developer |Greshma |
-main
-| Developer | |
+
 
 ## Project Overview
 
