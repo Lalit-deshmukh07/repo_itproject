@@ -8,7 +8,7 @@ _Due: Session 5 — 05 May_
 
 > **For** [target users]  
 > **Who** [have this problem / need]  
-> **Our product** [UniBite]  
+> **Our product** [UniBiteResto]  
 > **Is a** [category]  
 > **That** [key benefit / reason to use it]  
 > **Unlike** [current alternative]  
