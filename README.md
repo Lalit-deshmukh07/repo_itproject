@@ -11,7 +11,7 @@
 | Scrum Master | sindren |
 | Developer |dj |
 | Developer | |
-| Developer | |
+| Developer | hhh|
 
 ## Project Overview
 
