@@ -6,12 +6,12 @@
 
 | Role | Name |
 |---|---|
-| Product Owner | lalit |
+| Product Owner | are you sure |
 | Scrum Master | brinda|
 | Scrum Master | Sandrin |
 | Developer |dj |
-| Developer |grishma |
-| Developer | |
+| Developer |Greshma |
+
 
 ## Project Overview
 

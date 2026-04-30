@@ -7,7 +7,7 @@ _Due: Session 5 — 05 May_
 ## Vision Statement
 
 > **For** [University students and staff]  
-> **Who** [have this problem / need]  
+> **Who** [want a quick and easy restaraunt options nearby]  
 > **Our product** [product name]  
 > **Is a** [category]  
 > **That** [key benefit / reason to use it]  
