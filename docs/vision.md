@@ -12,7 +12,7 @@ _Due: Session 5 — 05 May_
 > **Is a** [category]  
 > **That** [key benefit / reason to use it]  
 > **Unlike** [current alternative]  
-> **Our product** [key differentiator]
+> **Our product** [is simple , fast, and tailored for student and staff needs]
 
 ---
 
