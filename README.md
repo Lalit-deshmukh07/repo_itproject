@@ -8,7 +8,7 @@
 |---|---|
 | Product Owner | lalit |
 | Scrum Master | brinda|
-| Scrum Master | sindren |
+| Scrum Master | Sandrin |
 | Developer |dj |
 | Developer |grishma |
 | Developer | |
