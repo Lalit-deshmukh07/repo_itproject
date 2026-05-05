@@ -16,7 +16,7 @@ As a user, I want to select which of my saved wardrobe items I have available to
 As a user, I want to see a complete outfit assembled from my selected wardrobe items so that I have a clear, ready-to-wear suggestion without guessing how to combine pieces. 
 
 
-Question 24 — Priority Order for First Sprint (Highest → Lowest).
+Question 24 — Priority Order for First Sprint (Highest to the Lowest).
 The highest priority story is the occasion selector, since it is the very first thing Riya interacts with and every other feature depends on it being in place. 
 Directly after that comes weather data integration, because Berlin's cold mornings are central to Riya's scenario and without it the suggestions cannot be trusted as practical. 
 The third priority is the "Use My Wardrobe" selection feature, as this is the core resolution to Riya's problem. Without it the platform fails to address her actual gap. 
