@@ -16,4 +16,4 @@ She creates daily content, collaborates with premium brands, and needs fresh out
 Education & Technical Skill
 She has a background in fashion and high technical skills. She prefers advanced features, customization, and control over recommendations.
 Relevance (Goals & Motivation)
-Emily uses the AI Stylist to discover new outfit combinations, stay on trend, and maintain a premium, distinctive style. She values personalization and high-quality suggestions.
+Emily uses the AI Stylists to discover new outfit combinations, stay on trend, and maintain a premium, distinctive style. She values personalization and high-quality suggestions.
