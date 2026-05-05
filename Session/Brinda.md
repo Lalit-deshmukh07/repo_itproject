@@ -34,7 +34,7 @@ Riya is a 26-year-old Master’s student living in Berlin. She has a busy routin
 • Feature she would find confusing: Too many advanced filters (e.g., fabric type, layering logic)
 • Justification: She wants quick help, not complexity
 
-Persona 2: Emily Carter(Fashion Enthusiast)
+Persona 2: Emily Carter(Fashion Enthusiast
 
 Emily is a 27-year-old fashion content creator who actively follows trends on social media. She has strong fashion knowledge and enjoys experimenting with different styles. Her technical skill level is high, and she is comfortable exploring advanced features in apps. She would use the AI Stylist to discover new outfit combinations and stay updated with trends. She prefers premium brands and unique styling suggestions. She enjoys personalization and control over recommendations.
 • Feature she would love: Advanced customization (style filters, color palettes, trend-based suggestions)
