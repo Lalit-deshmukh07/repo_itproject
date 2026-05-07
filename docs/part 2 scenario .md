@@ -1,9 +1,35 @@
+**Objective**
 
-##Objective: Choose outfit easily using available clothes
-Actor: University student
-Activities: Open website → select filters → add wardrobe → get suggestions
-Problem: Confusion about combinations + limited wardrobe
-Resolution: AI suggests outfits using user’s own clothes
+To help Riya quickly generate suitable daily outfit suggestions based on weather and occasion with minimal effort, saving time and reducing decision fatigue.
 
-One gap identified is that users may not want to manually enter all their clothes every time, which could make the system inconvenient. 
-The system may need a feature to save or manage a user’s wardrobe.
+**Actor**
+
+Primary Actor: Riya Sen (End User)
+
+**Storyline**
+
+Riya wakes up in her Berlin apartment on a busy weekday morning. She has lectures at university followed by a part-time job shift in the evening. She is already running late and feels stressed about choosing what to wear.
+Instead of spending time mixing and matching clothes, she opens the AI Stylist app. The app automatically detects the weather in Berlin and asks her for a simple input like “College” or “Work”.
+With just one tap on “One-Click Outfit Suggestion,” the system instantly generates a complete outfit suitable for the weather and her schedule, including affordable clothing options. Riya picks the suggestion and gets ready without overthinking.
+
+**Problem**
+
+Riya struggles with daily outfit decisions due to lack of fashion confidence
+She has limited time because of studies and part-time work
+Too many complex styling options confuse her
+She needs affordable clothing suggestions due to budget constraints
+Existing fashion apps are too complicated and time-consuming
+
+**Solution**
+
+The WearItRight solves her problem by providing:
+
+⚡ One-click outfit generation based on weather and occasion
+🌦️ Automatic weather-based recommendations
+👗 Simple, ready-to-wear outfit suggestions (no complexity)
+💸 Budget-friendly clothing options
+📱 Clean, minimal interface designed for quick use
+
+**Final Outcome**
+
+Riya can confidently choose her outfit in seconds without stress, saving time every morning while staying appropriately dressed for weather, occasion, and budget.
