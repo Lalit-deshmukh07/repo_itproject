@@ -1,40 +1,26 @@
 **SCENARIO - 1**
 
-**Objective**
+Riya, a 26-year-old Master’s student in Berlin, uses the WearItRight website to make daily outfit decisions easier while balancing classes and a part-time job.
 
-To help Riya quickly generate suitable daily outfit suggestions based on weather and occasion with minimal effort, saving time and reducing decision fatigue.
+**Objective:**
 
-**Actor**
+Quickly get affordable, weather-based outfit suggestions without spending time or effort deciding what to wear.
 
-Primary Actor: Riya Sen (End User)
+**Actors**: 
 
-**Storyline**
+Riya Sen,Student, 26 years
 
-Riya wakes up in her Berlin apartment on a busy weekday morning. She has lectures at university followed by a part-time job shift in the evening. She is already running late and feels stressed about choosing what to wear.
-Instead of spending time mixing and matching clothes, she opens the WearItRight website. The site automatically detects the weather in Berlin and asks her for a simple input like “College” or “Work”.
-With just one tap on “One-Click Outfit Suggestion,” the system instantly generates a complete outfit suitable for the weather and her schedule, including affordable clothing options. Riya picks the suggestion and gets ready without overthinking.
+**Activities:**
 
-**Problem**
+Riya opens the WearItRight website, enters the occasion and checks the weather-based “one-click outfit suggestion” for ready-to-wear looks.
 
-Riya struggles with daily outfit decisions due to lack of fashion confidence
-She has limited time because of studies and part-time work
-Too many complex styling options confuse her
-She needs affordable clothing suggestions due to budget constraints
-Existing fashion apps are too complicated and time-consuming
+**Problem:**
 
-**Solution**
+She often feels confused and unconfident about choosing outfits, especially on busy mornings, and has limited time to plan.
 
-The WearItRight solves her problem by providing:
+**Resolution:**
 
-1. One-click outfit generation based on weather and occasion
-2. Automatic weather-based recommendations
-3. Simple, ready-to-wear outfit suggestions (no complexity)
-4. Budget-friendly clothing options
-5. Clean, minimal interface designed for quick use
-
-**Final Outcome**
-
-Riya can confidently choose her outfit in seconds without stress, saving time every morning while staying appropriately dressed for weather, occasion, and budget.
+The WearItRight instantly generates simple, budget-friendly outfit ideas, helping her dress quickly, feel confident, and stay on schedule without any complexity.
 
 **SCENARIO - 2**
 
