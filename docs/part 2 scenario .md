@@ -47,6 +47,7 @@ Create bold, premium, and standout fashion looks using advanced customization an
 **Actors:**
 
 Emily Carter, 27 year-old
+
 **Activities:**
 
 Emily interacts with the WearItRight, applies filters like luxury brands, color palettes, and avant-garde styles, and experiments with outfit combinations for a fashion shoot.
@@ -54,6 +55,7 @@ Emily interacts with the WearItRight, applies filters like luxury brands, color 
 **Problem:**
 
 She feels stuck in repetitive styling ideas, and her content is losing freshness.
+
 **Resolution:**
 
 The WearItRight generates creative, unexpected outfit combinations that refresh her style, helping her create a viral, standout look and regain audience engagement.
