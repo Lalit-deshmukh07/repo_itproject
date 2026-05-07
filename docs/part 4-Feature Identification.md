@@ -26,7 +26,7 @@ Describes who needs the feature and why.
 Example:
 “As a user, I want outfit suggestions so that I can choose clothes easily.”
 
-27. Level of Detail in Features
+27. Level of Detail in Features:
 Features should be written in a simple and high-level manner during the early stages of development.
 
 Good Example:
@@ -35,7 +35,7 @@ Good Example:
 Too Detailed:
 “Use AI algorithms and color matching systems to generate outfit recommendations”
 
-28. Features Implied by the AI Stylist Project Vision
+28. Features Implied by the WearItRight Project Vision
 
 Based on the project vision, the following features were identified:
 
