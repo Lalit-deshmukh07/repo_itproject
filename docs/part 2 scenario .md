@@ -8,7 +8,7 @@ and the user’s available clothes, helping her save time and make better decisi
 
 Objective: Choose outfit easily using available clothes
 Actor: University student
-Activities: Open website → enter prompt → add wardrobe → get suggestions
+Activities: Open website → select filters → add wardrobe → get suggestions
 Problem: Confusion about combinations + limited wardrobe
 Resolution: AI suggests outfits using user’s own clothes
 
