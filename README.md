@@ -1,6 +1,6 @@
-# Project Name
+# WareItright
 
-> One-sentence description of what this project does and who it is for.
+> WareItRight Is an AI-Powered fashion stylish website that helps every user find personalised outfits based on their style, preference, and current fashion trends.
 
 ## Team
 
