@@ -1,4 +1,4 @@
-Question 21 and 22 —  5+ User Stories extracted from Riya's scenario.
+**Question 21 and 22 —  5+ User Stories extracted from Riya's scenario.**
 As a student with low fashion confidence, I want/need to select an occasion type (e.g. "formal") from a simple menu so that the system filters outfit suggestions that are appropriate for my university presentation. 
 As a user in Berlin on a cold morning, I want/need to allow the system to access current weather data for my location so that every outfit suggested is weather-appropriate and I don't have to think about layering myself. 
 As a user who struggles to combine clothes, I want/need to activate a "Use My Wardrobe" mode and select the clothes I already own so that the system builds a realistic outfit from what I actually have rather than suggesting things I need to buy. 
@@ -7,7 +7,7 @@ As a user with low styling confidence, I want/need to receive simple, clear styl
 As a user in a hurry before class, I want/need to receive a finalised outfit recommendation in under 3 clicks after selecting my occasion and wardrobe items so that I can get dressed and leave the house without losing time. 
 
 
-Question 23 — Identify Epics & Break One Down.
+**Question 23 — Identify Epics & Break One Down.**
 ("Use My Wardrobe" mode) is an epic. It is too large for a single sprint because it involves uploading, cataloguing, matching and displaying clothes. 
 Breaking it into smaller stories: 
 As a user, I want to photograph or manually add individual clothing items to my wardrobe profile so that the system has accurate data about what I own. 
@@ -16,7 +16,7 @@ As a user, I want to select which of my saved wardrobe items I have available to
 As a user, I want to see a complete outfit assembled from my selected wardrobe items so that I have a clear, ready-to-wear suggestion without guessing how to combine pieces. 
 
 
-Question 24 — Priority Order for First Sprint (Highest to the Lowest).
+**Question 24 — Priority Order for First Sprint (Highest to the Lowest).**
 The highest priority story is the occasion selector, since it is the very first thing Riya interacts with and every other feature depends on it being in place. 
 Directly after that comes weather data integration, because Berlin's cold mornings are central to Riya's scenario and without it the suggestions cannot be trusted as practical. 
 The third priority is the "Use My Wardrobe" selection feature, as this is the core resolution to Riya's problem. Without it the platform fails to address her actual gap. 
