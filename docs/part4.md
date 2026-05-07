@@ -47,4 +47,5 @@ Based on the project vision, the following features were identified:
 * Save favorite outfits
 
 Conclusion
+
 Feature identification helps define the core functions of the system before development begins. Clearly identifying features improves project planning and ensures the system meets user needs effectively.
