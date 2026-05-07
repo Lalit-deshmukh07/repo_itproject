@@ -8,3 +8,6 @@ Brainstorming on features
 
 **05 May 2026**
 Disussed and tackled Part 5 - Trade-offs and Feature Creep
+
+**07 May 2026**
+Discussed with different groups and was given an advice that instead of using camera, make use of "text" and/or a pdf file. We can also make use of Chatgpt open source/feature
