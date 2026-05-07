@@ -1,3 +1,5 @@
+**SCENARIO - 1**
+
 **Objective**
 
 To help Riya quickly generate suitable daily outfit suggestions based on weather and occasion with minimal effort, saving time and reducing decision fatigue.
@@ -9,7 +11,7 @@ Primary Actor: Riya Sen (End User)
 **Storyline**
 
 Riya wakes up in her Berlin apartment on a busy weekday morning. She has lectures at university followed by a part-time job shift in the evening. She is already running late and feels stressed about choosing what to wear.
-Instead of spending time mixing and matching clothes, she opens the AI Stylist app. The app automatically detects the weather in Berlin and asks her for a simple input like “College” or “Work”.
+Instead of spending time mixing and matching clothes, she opens the WearItRight website. The site automatically detects the weather in Berlin and asks her for a simple input like “College” or “Work”.
 With just one tap on “One-Click Outfit Suggestion,” the system instantly generates a complete outfit suitable for the weather and her schedule, including affordable clothing options. Riya picks the suggestion and gets ready without overthinking.
 
 **Problem**
@@ -24,11 +26,11 @@ Existing fashion apps are too complicated and time-consuming
 
 The WearItRight solves her problem by providing:
 
-⚡ One-click outfit generation based on weather and occasion
-🌦️ Automatic weather-based recommendations
-👗 Simple, ready-to-wear outfit suggestions (no complexity)
-💸 Budget-friendly clothing options
-📱 Clean, minimal interface designed for quick use
+1. One-click outfit generation based on weather and occasion
+2. Automatic weather-based recommendations
+3. Simple, ready-to-wear outfit suggestions (no complexity)
+4. Budget-friendly clothing options
+5. Clean, minimal interface designed for quick use
 
 **Final Outcome**
 
