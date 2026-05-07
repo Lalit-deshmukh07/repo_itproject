@@ -21,25 +21,25 @@ Relevance (Goals & Motivation)
 Emily uses the AI Stylists to discover new outfit combinations, stay on trend, and maintain a premium, distinctive style. She values personalization and high-quality suggestions.
 
 User Types for AI Stylist
-• End User (daily user looking for outfit suggestions)
-• Fashion Enthusiast (advanced user / trend-focused)
-• Admin (manages system content and recommendations)
+ End User (daily user looking for outfit suggestions)
+ Fashion Enthusiast (advanced user / trend-focused)
+ Admin (manages system content and recommendations)
 
 Proto-Personas
 
 Persona 1: Riya Sen(End User)
 
 Riya is a 26-year-old Master’s student living in Berlin. She has a busy routine balancing studies and part-time work. She is not very confident in fashion and often struggles to decide what to wear daily. Her technical skills are basic—she is comfortable using apps but prefers simple interfaces. She would use the AI Stylist to quickly get outfit suggestions based on weather and occasion. Budget is important to her, so she prefers affordable clothing options. She values convenience and speed over detailed customization.
-• Feature she would love: “One-click outfit suggestion” based on weather
-• Feature she would find confusing: Too many advanced filters (e.g., fabric type, layering logic)
-• Justification: She wants quick help, not complexity
+ Feature she would love: “One-click outfit suggestion” based on weather
+ Feature she would find confusing: Too many advanced filters (e.g., fabric type, layering logic)
+ Justification: She wants quick help, not complexity
 
-Persona 2: Emily Carter(Fashion Enthusiast
+Persona 2: Emily Carter(Fashion Enthusiast)
 
 Emily is a 27-year-old fashion content creator who actively follows trends on social media. She has strong fashion knowledge and enjoys experimenting with different styles. Her technical skill level is high, and she is comfortable exploring advanced features in apps. She would use the AI Stylist to discover new outfit combinations and stay updated with trends. She prefers premium brands and unique styling suggestions. She enjoys personalization and control over recommendations.
-• Feature she would love: Advanced customization (style filters, color palettes, trend-based suggestions)
-• Feature she would find unnecessary: Basic “quick suggestion” mode
-• Justification: She wants depth and creativity, not generic outputs
+ Feature she would love: Advanced customization (style filters, color palettes, trend-based suggestions)
+ Feature she would find unnecessary: Basic “quick suggestion” mode
+ Justification: She wants depth and creativity, not generic outputs
 
 Persona 3: Robert Pattinson(Admin)
 
