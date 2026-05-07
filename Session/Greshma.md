@@ -18,3 +18,11 @@ Had a scrum meeting where the members of the team discussed about the parts they
 Took feedback from the professor after he reviewed our project
 Worked on tbe part-2 scenarios as advised by the professor
 Had group discussions with the other group about each other projects and gave suggestions to the others and received suggestions that can be added to our project.
+
+**Questions:**
+
+**Which concept was more useful for your project and why?**
+
+For me it will be the concept of PERSONAS because this is the main source which decides and defines the rest of our project WearItRight. The persona can help us build the scenarios, the user stories and also defines on what features are necessary and which are not.
+
+**What is one assumption about your users that this workshop forced you to challenge?**
