@@ -36,10 +36,24 @@ The WearItRight solves her problem by providing:
 
 Riya can confidently choose her outfit in seconds without stress, saving time every morning while staying appropriately dressed for weather, occasion, and budget.
 
-Objective
+**SCENARIO - 2**
 
-Emily wants to create stylish, trend-based outfit ideas quickly for her social media content while maintaining personalization and creative control.
+Emily Carter, a 27-year-old fashion content creator in Berlin, uses the WearItRight to design unique, trend-driven outfits for her social media.
 
-Concise Scenario
+**Objective:**
 
-Emily Carter, a 27-year-old fashion content creator, uses WearItRight to discover new outfit ideas for her upcoming fashion posts. She uploads her wardrobe items and applies advanced filters such as color palette, premium style, and trending fashion themes. It suggests personalized outfit combinations and accessories based on current trends. Emily saves her favorite looks and uses the recommendations to create unique content for her audience.
+Create bold, premium, and standout fashion looks using advanced customization and trend-based suggestions.
+
+**Actors:**
+
+Emily Carter, 27 year-old
+**Activities:**
+
+Emily interacts with the WearItRight, applies filters like luxury brands, color palettes, and avant-garde styles, and experiments with outfit combinations for a fashion shoot.
+
+**Problem:**
+
+She feels stuck in repetitive styling ideas, and her content is losing freshness.
+**Resolution:**
+
+The WearItRight generates creative, unexpected outfit combinations that refresh her style, helping her create a viral, standout look and regain audience engagement.
