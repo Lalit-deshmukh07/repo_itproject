@@ -8,10 +8,12 @@ Disscussed on the team project
 Created the branch
 
 **Date: 5th May 2026**
+
 Worked on different parts assigned to each one. 
 Dealed with Part 4 : Feature Identification 
 
 **Date: 7th May 2026**
+
 Had a scrum meeting where the members of the team discussed about the parts they did.
 Took feedback from the professor after he reviewed our project
 Worked on tbe part-2 scenarios as advised by the professor
