@@ -19,3 +19,8 @@ The groups interviewed where the group incharge of rental properties, the group 
 I think the Personas concept was most useful for our project because that is where the problem we had to solve came from.
 The assumption about each user is that each user can accurately describe their body shape and personal style preference in words. In reality, most users especially beginners, often feel overwhelmed or give inaccurate answers (e.g., mismatching their body shape). This leads to high abandonment during onboarding and poor initial recommendations.
 So we moved from declarative styling (asking them) to observational styling like asking users to upload a photo of themeselves in their favourite outfits. This allows the AI to analyse the fit and style directly, bypassing the need for the user to understand fashion jagon (learning from behavior).
+
+**12th May 2026**
+I downloaded and installed vmware.
+I installed my linux into the vmware.
+Installed and enabled the OpenSSH server to allow secure remote terminal access via SSH.
