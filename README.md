@@ -1,6 +1,6 @@
-# WareItright
+# WearItright
 
-> WareItRight Is an AI-Powered fashion stylish website that helps every user find personalised outfits based on their style, preference, and current fashion trends.
+> WearItRight Is an AI-Powered fashion stylish website that helps every user find personalised outfits based on their style, preference, and current fashion trends.
 
 ## Team
 
