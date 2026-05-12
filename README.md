@@ -1,6 +1,6 @@
-# Project Name
+# WearItright
 
-> One-sentence description of what this project does and who it is for.
+> WearItRight Is an AI-Powered fashion stylish website that helps every user find personalised outfits based on their style, preference, and current fashion trends.
 
 ## Team
 
