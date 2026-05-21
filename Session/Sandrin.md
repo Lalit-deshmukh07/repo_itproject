@@ -32,4 +32,11 @@ I deployed a static website
 
 **21th May 2026**
 I installed Docker and Docker compose on my windows (host) machine.
-The cloud services used in Germany are AWS which is the most use, Google cloud, Micr
+
+The cloud services used in Germany are AWS which is the most use, Google cloud, Microsoft Azure on a large scale and on a smaller scale we have Hertzner and IONOS.
+For enterprise connectivity in Cameroon, Connected Networks provides dedicated access to major global platforms like AWS, Azure, and Google Cloud, while Huawei has supported government digitalization through
+private cloud platforms and Virtual Desktop Infrastructure (VDI) systems.
+MTN Cameroon and ST Digital are the primary local providers of cloud infrastructure and services in Cameroon.  
+MTN offers cloud services and ICT/IoT solutions for businesses, leveraging its data centers to address data sovereignty and latency concerns. 
+
+I then discussed the blocking part of our project with the teacher.
