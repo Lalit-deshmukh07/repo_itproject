@@ -24,3 +24,12 @@ So we moved from declarative styling (asking them) to observational styling like
 I downloaded and installed vmware.
 I installed my linux into the vmware.
 Installed and enabled the OpenSSH server to allow secure remote terminal access via SSH.
+
+**19th May 2026**
+I finished installing and configuring my ssh, ftp and scp.
+I installed the nginx webserver
+I deployed a static website
+
+**21th May 2026**
+I installed Docker and Docker compose on my windows (host) machine.
+The cloud services used in Germany are AWS which is the most use, Google cloud, Micr
