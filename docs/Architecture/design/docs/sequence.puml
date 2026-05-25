@@ -1,0 +1,277 @@
+@startuml
+title WearItRight - Sequence Diagram (All Application Flows)
+autonumber
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceGroupBorderThickness 1.5
+skinparam participantPadding 10
+skinparam BoxPadding 10
+
+actor "Visitor / User" as User
+
+box "Frontend (Browser)" #EFF6FF
+  participant "Web UI" as UI
+end box
+
+box "Backend Services" #F0FDF4
+  participant "AuthService" as Auth
+  participant "ProfileService" as Profile
+  participant "RecommendationService" as RecSvc
+  participant "ShoppingService" as ShopSvc
+  participant "FilterSortService" as FilterSvc
+  participant "FavoritesService" as FavSvc
+  participant "FeedbackService" as FeedbackSvc
+  participant "MonitoringService" as Monitor
+end box
+
+box "Persistence" #FFF7ED
+  participant "Database" as DB
+  participant "AuditLog" as Audit
+end box
+
+box "External Integrations" #FDF4FF
+  participant "WeatherProviderClient" as WeatherAPI
+  participant "ShoppingProviderClient" as ShopAPI
+  participant "EmailClient" as Email
+end box
+
+== FR-01 | User Registration (LLR 1.1, 1.2, NFR-10, NFR-11) ==
+
+User -> UI : Submit registration form\n(email, password)
+UI -> Auth : register(email, password)
+Auth -> Auth : Validate password rules\n(min 8 chars, upper, lower, digit)
+Auth -> Auth : Hash password\n(salted adaptive hash)
+Auth -> DB : Persist User record
+DB --> Auth : User created
+Auth -> DB : Record ConsentRecord\n(TERMS_OF_USE, PRIVACY_POLICY)
+Auth -> Audit : Log REGISTRATION event
+Auth --> UI : Registration success
+UI --> User : Redirect to profile setup
+
+== FR-02 | User Login and Session (LLR 1.3, NFR-12, NFR-13) ==
+
+User -> UI : Submit login form\n(email, password)
+UI -> Auth : login(email, password)
+Auth -> DB : Load User by email
+DB --> Auth : User record
+Auth -> Auth : Verify password hash
+Auth -> DB : Create UserSession\n(accessToken, expiresAt)
+Auth -> Audit : Log LOGIN event
+Auth --> UI : Return accessToken
+UI --> User : Authenticated - show dashboard
+
+== FR-03 | Password Reset (LLR 1.4, NFR-10) ==
+
+User -> UI : Request password reset
+UI -> Auth : requestPasswordReset(email)
+Auth -> DB : Create PasswordResetToken\n(signed, expiring)
+Auth -> Email : sendPasswordReset(email, token)
+Email --> Auth : Sent
+Auth --> UI : Reset link sent confirmation
+User -> UI : Submit new password via reset link
+UI -> Auth : resetPassword(token, newPassword)
+Auth -> DB : Verify token not expired or used
+Auth -> Auth : Hash new password
+Auth -> DB : Update passwordHash
+Auth -> DB : Mark token used
+Auth -> Audit : Log PASSWORD_RESET event
+Auth --> UI : Password updated
+UI --> User : Redirect to login
+
+== FR-04, FR-05 | Profile and Exclusion Setup (LLR 1.5, 1.6, 1.7) ==
+
+User -> UI : Submit profile form\n(style, fit, sizes, colors, budget)
+UI -> Profile : updatePreferences(userId, data)
+Profile -> Auth : authorize(userId, ROLE:USER)
+Auth --> Profile : Authorized
+Profile -> DB : Persist UserPreferences
+Profile -> DB : Persist SizeProfile
+Profile --> UI : Preferences saved
+User -> UI : Submit exclusion preferences\n(colors, patterns, categories)
+UI -> Profile : updateExclusions(userId, exclusions)
+Profile -> DB : Persist ExclusionPreferences
+Profile --> UI : Exclusions saved
+UI --> User : Profile setup complete
+
+== FR-06 to FR-09 | Location, Event Context, and Recommendation Request (LLR 2.1-2.6, NFR-09) ==
+
+User -> UI : Grant geolocation or enter location manually
+UI -> UI : Capture LocationContext\n(source, city, lat/lon)
+note right of UI : Geolocation used only after\nexplicit user consent (LLR 9.5, NFR-15)
+User -> UI : Select event type, dress code, event time
+UI -> UI : Build EventContext
+UI -> RecSvc : generateRecommendations(userId, location, eventContext)
+RecSvc -> Auth : authorize(userId, ROLE:USER)
+Auth --> RecSvc : Authorized
+RecSvc -> FeedbackSvc : showLoading("Fetching weather...")
+FeedbackSvc --> UI : Loading indicator shown
+
+alt Weather cache valid (TTL not expired)
+  RecSvc -> DB : Load cached WeatherSnapshot
+  DB --> RecSvc : WeatherSnapshot
+else Cache expired or missing
+  RecSvc -> WeatherAPI : getCurrentWeather(location)
+  alt Weather API available
+    WeatherAPI --> RecSvc : WeatherSnapshot\n(temp, precipitation, humidity, wind)
+    RecSvc -> DB : Cache WeatherSnapshot\n(TTL = configured duration)
+  else Weather API unavailable
+    RecSvc -> FeedbackSvc : showFallbackGuidance("weather_unavailable")
+    FeedbackSvc --> UI : Prompt user for manual weather input
+    User -> UI : Enter weather conditions manually
+    UI -> RecSvc : Provide manual WeatherSnapshot
+  end
+end
+
+RecSvc -> DB : Load UserPreferences and ExclusionPreferences
+DB --> RecSvc : Preferences and exclusions
+RecSvc -> DB : Persist RecommendationRequest\n(userId, locationContextId, eventContextId, weatherSnapshotId)
+
+== FR-09 to FR-13 | Generation, Weather Rules, Ranking, Explanation, Confidence Tips (LLR 3.1-3.8) ==
+
+RecSvc -> RecSvc : Generate >= 3 OutfitRecommendation candidates\n(top + bottom + footwear + optional accessory)
+RecSvc -> RecSvc : applyExclusions(recommendations, exclusions)\n(remove items in excluded colors/patterns/categories)
+RecSvc -> RecSvc : applyWeatherRules(recommendations, weather)\n(add layering if temp below threshold;\nprefer rain-resistant if precipitation > threshold)
+RecSvc -> RecSvc : rankRecommendations()\n(relevanceScore = weather fit + event fit + preference match)
+
+loop For each OutfitRecommendation
+  RecSvc -> DB : Persist OutfitRecommendation\n(rank, relevanceScore, estimatedTotalPrice)
+  RecSvc -> DB : Persist OutfitItems\n(top, bottom, footwear, [accessory])
+  RecSvc -> DB : Persist RecommendationExplanation\n(weatherReason, eventReason)
+  RecSvc -> DB : Persist StyleTip\n(confidence tip text)
+end
+
+RecSvc -> Audit : Log RECOMMENDATION_REQUEST\n(requestId, inputs, recommendationIds)
+RecSvc -> Monitor : recordLatency("recommendation.generate", elapsed)
+RecSvc --> UI : OutfitRecommendation[] (ranked, with explanations and tips)
+FeedbackSvc -> UI : Hide loading indicator
+
+== FR-14 | Regenerate Recommendations (LLR 4.4) ==
+
+User -> UI : Click "Regenerate Recommendations"
+UI -> RecSvc : regenerate(requestId)
+RecSvc -> DB : Load original RecommendationRequest\n(preserve same context unless changed by user)
+RecSvc -> RecSvc : Re-run generation pipeline
+RecSvc --> UI : Fresh OutfitRecommendation[]
+UI --> User : Updated recommendations displayed
+
+== FR-15, FR-16 | Outfit Display and Item Detail View (LLR 4.1-4.5) ==
+
+UI --> User : Render outfit cards\n(image, name, brand, price, store, total cost,\n"Why this outfit" section, confidence tip)
+User -> UI : Expand outfit card
+UI --> User : Show item-level detail view\n(per OutfitItem with linked ProductOffers)
+
+== FR-17 to FR-20 | Product Matching, Price Aggregation, Best Price, Redirect (LLR 5.1-5.6, NFR-08) ==
+
+UI -> ShopSvc : mapOutfitToProducts(outfitId)
+ShopSvc -> FeedbackSvc : showLoading("Finding best prices...")
+FeedbackSvc --> UI : Loading indicator shown
+
+loop For each active ShoppingProvider
+  ShopSvc -> ShopAPI : searchProducts(category, brand, size, color)
+  alt Provider available
+    ShopAPI --> ShopSvc : ProductOffer[]\n(price, currency, inStock, productUrl, lastCheckedAt)
+    ShopSvc -> ShopSvc : normalizeCurrency(offers, userPreferredCurrency)
+    ShopSvc -> DB : Persist / refresh ProductOffers
+  else Provider unavailable
+    ShopSvc -> ShopSvc : Apply ResiliencePolicy\n(retry with backoff + circuit breaker)
+    ShopSvc -> Monitor : recordError("shopping_provider", providerName)
+    note right : FR-31 / NFR-06: Core recommendation\nflow continues with remaining providers
+  end
+end
+
+ShopSvc -> ShopSvc : findBestPrice(productItemId)\n(lowest normalizedPrice across providers)
+ShopSvc -> DB : Persist PriceComparisonResult
+ShopSvc -> DB : Exclude out-of-stock offers from default results
+ShopSvc --> UI : ProductOffer[] with Best Price label
+FeedbackSvc -> UI : Hide loading indicator
+UI --> User : Display price comparison cards
+
+User -> UI : Click "Open in Store" on an offer
+UI --> User : Open retailer productUrl in new browser tab
+
+== FR-21, FR-22 | Filter and Sort Products (LLR 6.1-6.3) ==
+
+User -> UI : Apply filters\n(priceMin/Max, brand, size, color, store)
+UI -> FilterSvc : filterOffers(offers, ProductQuery)
+FilterSvc --> UI : Filtered ProductOffer[]
+User -> UI : Select sort order\n(price asc/desc, relevance, newest)
+UI -> FilterSvc : sortOffers(offers, sortBy)
+FilterSvc --> UI : Sorted ProductOffer[]\n(completed in < 2 seconds for up to 200 items)
+UI --> User : Updated product listing
+
+== FR-23 to FR-25 | Save and Manage Favorites (LLR 7.1-7.4) ==
+
+User -> UI : Save outfit to favorites
+UI -> FavSvc : saveOutfit(userId, outfitId)
+FavSvc -> Auth : authorize(userId, ROLE:USER)
+Auth --> FavSvc : Authorized
+FavSvc -> DB : Persist FavoriteOutfit (savedAt = now)
+FavSvc --> UI : Outfit saved confirmation
+
+User -> UI : Save item to favorites
+UI -> FavSvc : saveItem(userId, offerId)
+FavSvc -> Auth : authorize(userId, ROLE:USER)
+Auth --> FavSvc : Authorized
+FavSvc -> DB : Persist FavoriteItem (savedAt = now)
+FavSvc --> UI : Item saved confirmation
+
+User -> UI : Open Favorites list
+UI -> FavSvc : listFavorites(userId)
+FavSvc -> DB : Load FavoriteOutfit[] and FavoriteItem[]\n(including savedAt timestamps)
+DB --> FavSvc : Favorites data
+FavSvc --> UI : Favorites list
+UI --> User : Display saved outfits and items with timestamps
+
+User -> UI : Remove outfit from favorites
+UI -> FavSvc : removeOutfit(userId, outfitId)
+FavSvc -> DB : Delete FavoriteOutfit record
+FavSvc --> UI : Removed confirmation
+
+== FR-28 | Error Handling and User Feedback (LLR 8.1-8.3, NFR-20) ==
+
+UI -> RecSvc : generateRecommendations(...)
+RecSvc --> UI : Error response (engine failure)
+UI -> FeedbackSvc : showError(code, "Unable to generate recommendations.\nPlease adjust your context or try again.")
+FeedbackSvc --> UI : Actionable error message with next-step guidance
+RecSvc -> Monitor : recordError("recommendation.generate", errorCode)
+
+== FR-29 | Security and Access Control (LLR 9.1-9.4, NFR-10, NFR-12) ==
+
+note over UI, Auth
+  All protected API calls must include a valid accessToken in the
+  Authorization header. AuthService.authorize() validates the token
+  and user role before any profile, recommendation, favorites, or
+  admin operation proceeds. All traffic is enforced over HTTPS /
+  TLS 1.2+ (NFR-10). Sessions expire after configurable inactivity
+  period and are invalidated on logout (NFR-13).
+end note
+
+== FR-30 | Account and Personal Data Deletion (LLR 9.6, NFR-16) ==
+
+User -> UI : Request account deletion
+UI -> Auth : deleteAccount(userId)
+Auth -> Auth : authorize(userId, ROLE:USER)
+Auth -> DB : Delete UserPreferences, SizeProfile, ExclusionPreferences
+Auth -> DB : Delete RecommendationRequests, FavoriteOutfits, FavoriteItems
+Auth -> DB : Delete UserSessions and ConsentRecords
+Auth -> DB : Anonymise or purge User record
+Auth -> Audit : Log ACCOUNT_DELETION event
+Auth --> UI : Account deletion confirmed
+UI --> User : Logged out - account removed
+
+== FR-32 | Audit Logging and Observability (LLR 12.2-12.3, NFR-17, NFR-18) ==
+
+note over Audit, Monitor
+  AuditLog captures entries from AuthService and RecommendationService
+  for all security and recommendation events, stamped with userId,
+  correlationId, eventData, and timestamp (NFR-17).
+  MonitoringService continuously tracks latency, error rate, throughput,
+  and external API health, raising alerts when configured thresholds
+  are breached (NFR-18).
+end note
+
+Monitor -> Monitor : checkApiHealth(WeatherProvider)
+Monitor -> Monitor : checkApiHealth(ShoppingProviders)
+Monitor -> Monitor : raiseAlert(metric) if threshold exceeded
+
+@enduml

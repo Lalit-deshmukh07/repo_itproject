@@ -1,0 +1,3 @@
+We want to build a web application that helps people to have better clothing style and boost their confidence. 
+The application should help users pick the best clothing style according to the weather, according to events.
+The application should also help them shop clothes that match the recommended clothing styles by the application at the best available prices.

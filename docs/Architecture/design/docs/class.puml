@@ -1,0 +1,473 @@
+@startuml
+title WearItRight - Class Diagram
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Identity and Access" {
+	class User {
+		+id: UUID
+		+email: string
+		+passwordHash: string
+		+status: AccountStatus
+		+createdAt: datetime
+		+lastLoginAt: datetime
+		+register()
+		+deleteAccount()
+	}
+
+	class Role {
+		+id: UUID
+		+name: RoleType
+	}
+
+	class UserSession {
+		+id: UUID
+		+userId: UUID
+		+accessToken: string
+		+expiresAt: datetime
+		+isActive: bool
+		+invalidate()
+	}
+
+	class PasswordResetToken {
+		+id: UUID
+		+userId: UUID
+		+token: string
+		+expiresAt: datetime
+		+usedAt: datetime
+		+markUsed()
+	}
+
+	class ConsentRecord {
+		+id: UUID
+		+userId: UUID
+		+consentType: ConsentType
+		+granted: bool
+		+recordedAt: datetime
+	}
+
+	class AuthService {
+		+register(email, password)
+		+login(email, password)
+		+logout(sessionId)
+		+requestPasswordReset(email)
+		+resetPassword(token, newPassword)
+		+authorize(userId, role)
+	}
+}
+
+package "Profile and Preferences" {
+	class UserPreferences {
+		+id: UUID
+		+userId: UUID
+		+budgetMin: decimal
+		+budgetMax: decimal
+		+stylePreferences: string[*]
+		+preferredColors: string[*]
+		+updatedAt: datetime
+	}
+
+	class SizeProfile {
+		+id: UUID
+		+userId: UUID
+		+topSize: string
+		+bottomSize: string
+		+footwearSize: string
+	}
+
+	class ExclusionPreferences {
+		+id: UUID
+		+userId: UUID
+		+excludedColors: string[*]
+		+excludedPatterns: string[*]
+		+excludedCategories: ClothingCategory[*]
+	}
+
+	class ProfileService {
+		+updatePreferences(userId, data)
+		+updateSizes(userId, sizes)
+		+updateExclusions(userId, exclusions)
+		+getProfile(userId)
+	}
+}
+
+package "Context and Recommendation" {
+	class LocationContext {
+		+id: UUID
+		+source: LocationSource
+		+city: string
+		+countryCode: string
+		+latitude: double
+		+longitude: double
+		+capturedAt: datetime
+	}
+
+	class EventContext {
+		+id: UUID
+		+eventType: EventType
+		+dressCode: DressCode
+		+eventTime: EventTime
+	}
+
+	class WeatherSnapshot {
+		+id: UUID
+		+temperatureC: decimal
+		+precipitationChance: decimal
+		+humidity: decimal
+		+windKph: decimal
+		+observedAt: datetime
+		+expiresAt: datetime
+	}
+
+	class RecommendationRequest {
+		+id: UUID
+		+userId: UUID
+		+locationContextId: UUID
+		+eventContextId: UUID
+		+weatherSnapshotId: UUID
+		+requestedAt: datetime
+	}
+
+	class OutfitRecommendation {
+		+id: UUID
+		+requestId: UUID
+		+rank: int
+		+relevanceScore: decimal
+		+estimatedTotalPrice: decimal
+	}
+
+	class OutfitItem {
+		+id: UUID
+		+outfitId: UUID
+		+category: ClothingCategory
+		+isOptional: bool
+	}
+
+	class RecommendationExplanation {
+		+id: UUID
+		+outfitId: UUID
+		+weatherReason: string
+		+eventReason: string
+	}
+
+	class StyleTip {
+		+id: UUID
+		+outfitId: UUID
+		+tipText: string
+	}
+
+	class RecommendationService {
+		+generateRecommendations(request): OutfitRecommendation[*]
+		+rankRecommendations(recommendations)
+		+applyWeatherRules(recommendations, weather)
+		+applyExclusions(recommendations, exclusions)
+		+regenerate(requestId)
+	}
+}
+
+package "Shopping and Comparison" {
+	class ProductItem {
+		+id: UUID
+		+name: string
+		+brand: string
+		+category: ClothingCategory
+		+color: string
+		+imageUrl: string
+	}
+
+	class ProductOffer {
+		+id: UUID
+		+productItemId: UUID
+		+providerId: UUID
+		+currency: CurrencyCode
+		+price: decimal
+		+normalizedPrice: decimal
+		+inStock: bool
+		+productUrl: string
+		+lastCheckedAt: datetime
+	}
+
+	class ShoppingProvider {
+		+id: UUID
+		+name: string
+		+apiBaseUrl: string
+		+isActive: bool
+	}
+
+	class ProductMatch {
+		+id: UUID
+		+outfitItemId: UUID
+		+productItemId: UUID
+		+matchScore: decimal
+	}
+
+	class PriceComparisonResult {
+		+id: UUID
+		+productItemId: UUID
+		+bestOfferId: UUID
+		+calculatedAt: datetime
+	}
+
+	class ProductQuery {
+		+priceMin: decimal
+		+priceMax: decimal
+		+brand: string
+		+size: string
+		+color: string
+		+store: string
+		+sortBy: SortOption
+	}
+
+	class ShoppingService {
+		+mapOutfitToProducts(outfit): ProductMatch[*]
+		+retrieveOffers(matches): ProductOffer[*]
+		+normalizeCurrency(offers, targetCurrency)
+		+findBestPrice(productItemId): PriceComparisonResult
+		+openRetailerPage(offerId)
+	}
+
+	class FilterSortService {
+		+filterOffers(offers, query): ProductOffer[*]
+		+sortOffers(offers, sortBy): ProductOffer[*]
+	}
+}
+
+package "Favorites and UX" {
+	class FavoriteOutfit {
+		+id: UUID
+		+userId: UUID
+		+outfitId: UUID
+		+savedAt: datetime
+	}
+
+	class FavoriteItem {
+		+id: UUID
+		+userId: UUID
+		+offerId: UUID
+		+savedAt: datetime
+	}
+
+	class FavoritesService {
+		+saveOutfit(userId, outfitId)
+		+saveItem(userId, offerId)
+		+removeOutfit(userId, outfitId)
+		+removeItem(userId, offerId)
+		+listFavorites(userId)
+	}
+
+	class FeedbackService {
+		+showLoading(context)
+		+showError(code, message)
+		+showFallbackGuidance(context)
+	}
+}
+
+package "Operations and Quality" {
+	class AuditLog {
+		+id: UUID
+		+userId: UUID
+		+eventType: AuditEventType
+		+correlationId: string
+		+eventData: json
+		+createdAt: datetime
+	}
+
+	class MetricSample {
+		+id: UUID
+		+name: string
+		+value: decimal
+		+tags: json
+		+recordedAt: datetime
+	}
+
+	class ResiliencePolicy {
+		+id: UUID
+		+targetSystem: string
+		+timeoutMs: int
+		+retryCount: int
+		+circuitBreakerThreshold: int
+	}
+
+	class MonitoringService {
+		+recordLatency(name, value)
+		+recordError(name, code)
+		+checkApiHealth(provider)
+		+raiseAlert(metric)
+	}
+}
+
+package "External Integrations" {
+	interface WeatherProviderClient {
+		+getCurrentWeather(location): WeatherSnapshot
+	}
+
+	interface ShoppingProviderClient {
+		+searchProducts(query): ProductOffer[*]
+		+getAvailability(productId): bool
+	}
+
+	interface EmailClient {
+		+sendPasswordReset(email, token)
+	}
+
+	class WeatherApiAdapter
+	class ShoppingApiAdapter
+	class EmailAdapter
+}
+
+enum RoleType {
+	USER
+	ADMIN
+}
+
+enum AccountStatus {
+	ACTIVE
+	SUSPENDED
+	DELETED
+}
+
+enum ConsentType {
+	GEOLOCATION
+	PRIVACY_POLICY
+	TERMS_OF_USE
+}
+
+enum LocationSource {
+	MANUAL
+	GEOLOCATION
+}
+
+enum EventType {
+	CASUAL
+	BUSINESS
+	FORMAL
+	OUTDOOR
+	PARTY
+	DATE
+}
+
+enum DressCode {
+	SMART_CASUAL
+	BUSINESS_FORMAL
+	BLACK_TIE
+	NONE
+}
+
+enum EventTime {
+	DAY
+	NIGHT
+}
+
+enum ClothingCategory {
+	TOP
+	BOTTOM
+	FOOTWEAR
+	ACCESSORY
+	OUTERWEAR
+}
+
+enum CurrencyCode {
+	USD
+	EUR
+	GBP
+	ZAR
+}
+
+enum SortOption {
+	RELEVANCE
+	PRICE_ASC
+	PRICE_DESC
+	NEWEST
+}
+
+enum AuditEventType {
+	LOGIN
+	LOGOUT
+	PASSWORD_RESET
+	RECOMMENDATION_REQUEST
+	ACCOUNT_DELETION
+	ROLE_CHANGE
+}
+
+' Identity relationships
+User "1" -- "0..*" UserSession
+User "1" -- "0..*" PasswordResetToken
+User "1" -- "1..*" Role
+User "1" -- "0..*" ConsentRecord
+AuthService ..> User
+AuthService ..> PasswordResetToken
+AuthService ..> UserSession
+
+' Profile relationships
+User "1" -- "1" UserPreferences
+User "1" -- "1" SizeProfile
+User "1" -- "1" ExclusionPreferences
+ProfileService ..> UserPreferences
+ProfileService ..> SizeProfile
+ProfileService ..> ExclusionPreferences
+
+' Recommendation relationships
+RecommendationRequest "1" -- "1" LocationContext
+RecommendationRequest "1" -- "1" EventContext
+RecommendationRequest "1" -- "1" WeatherSnapshot
+User "1" -- "0..*" RecommendationRequest
+RecommendationRequest "1" -- "3..*" OutfitRecommendation
+OutfitRecommendation "1" -- "3..*" OutfitItem
+OutfitRecommendation "1" -- "1" RecommendationExplanation
+OutfitRecommendation "1" -- "1..*" StyleTip
+RecommendationService ..> RecommendationRequest
+RecommendationService ..> OutfitRecommendation
+RecommendationService ..> ExclusionPreferences
+
+' Shopping relationships
+OutfitItem "1" -- "0..*" ProductMatch
+ProductMatch "1" -- "1" ProductItem
+ProductItem "1" -- "1..*" ProductOffer
+ProductOffer "*" -- "1" ShoppingProvider
+ProductItem "1" -- "0..1" PriceComparisonResult
+ShoppingService ..> ProductMatch
+ShoppingService ..> ProductOffer
+FilterSortService ..> ProductOffer
+
+' Favorites relationships
+User "1" -- "0..*" FavoriteOutfit
+User "1" -- "0..*" FavoriteItem
+FavoriteOutfit "*" -- "1" OutfitRecommendation
+FavoriteItem "*" -- "1" ProductOffer
+FavoritesService ..> FavoriteOutfit
+FavoritesService ..> FavoriteItem
+
+' Operations relationships
+AuditLog "*" -- "0..1" User
+MonitoringService ..> MetricSample
+ShoppingService ..> ResiliencePolicy
+MonitoringService ..> ShoppingProvider
+RecommendationService ..> AuditLog
+AuthService ..> AuditLog
+
+' Integration relationships
+WeatherApiAdapter ..|> WeatherProviderClient
+ShoppingApiAdapter ..|> ShoppingProviderClient
+EmailAdapter ..|> EmailClient
+RecommendationService ..> WeatherProviderClient
+ShoppingService ..> ShoppingProviderClient
+AuthService ..> EmailClient
+
+note right of RecommendationService
+	Covers FR-09..FR-14 and low-level recommendation behavior:
+	context-driven generation, ranking, exclusions,
+	weather rules, explanation, and confidence tips.
+end note
+
+note right of ShoppingService
+	Covers FR-17..FR-22 and shopping low-level requirements:
+	multi-provider retrieval, best-price comparison,
+	stock handling, filtering, and sorting.
+end note
+
+note bottom of MonitoringService
+	Supports non-functional requirements for
+	observability, reliability, and performance tracking.
+end note
+
+@enduml
