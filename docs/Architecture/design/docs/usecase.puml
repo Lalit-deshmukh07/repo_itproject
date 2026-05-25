@@ -1,0 +1,165 @@
+@startuml
+title WearItRight - Use Case Diagram
+left to right direction
+
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+}
+skinparam actor {
+  BorderColor #0F172A
+  BackgroundColor #E2E8F0
+}
+
+actor "Visitor" as Visitor
+actor "Registered User" as User
+actor "Admin" as Admin
+actor "Weather Data API" as WeatherAPI
+actor "Shopping Provider APIs" as ShopAPIs
+actor "Email Service" as EmailService
+
+rectangle "WearItRight Web Application" {
+
+  package "Account and Access" {
+    usecase "Register Account" as UC_Register
+    usecase "Log In" as UC_Login
+    usecase "Log Out" as UC_Logout
+    usecase "Reset Password" as UC_ResetPassword
+    usecase "Send Password Reset Link" as UC_SendResetLink
+    usecase "Authenticate User" as UC_Authenticate
+    usecase "Authorize User Role" as UC_Authorize
+    usecase "Delete Account and Personal Data" as UC_DeleteAccount
+  }
+
+  package "Profile and Preferences" {
+    usecase "Manage Profile Preferences" as UC_Profile
+    usecase "Manage Clothing Sizes" as UC_Sizes
+    usecase "Manage Exclusion Preferences" as UC_Exclusions
+    usecase "Save Outfit to Favorites" as UC_SaveOutfit
+    usecase "Save Item to Favorites" as UC_SaveItem
+    usecase "Manage Favorites" as UC_ManageFavorites
+  }
+
+  package "Context and Recommendation" {
+    usecase "Provide Location\n(manual or geolocation)" as UC_Location
+    usecase "Select Event Type and Dress Code" as UC_EventContext
+    usecase "Retrieve Weather Context" as UC_Weather
+    usecase "Generate Outfit Recommendations" as UC_GenerateRecs
+    usecase "Rank Recommendations by Relevance" as UC_Rank
+    usecase "Apply Weather Rules\n(layering and rain protection)" as UC_WeatherRules
+    usecase "Apply User Exclusions" as UC_ApplyExclusions
+    usecase "Explain Recommendation\n(weather and event fit)" as UC_Explain
+    usecase "Provide Confidence Tips" as UC_Confidence
+    usecase "Regenerate Recommendations" as UC_Regenerate
+  }
+
+  package "Shopping and Comparison" {
+    usecase "Map Outfit Components\nto Purchasable Products" as UC_MapProducts
+    usecase "Retrieve Product Price, Stock, and URL" as UC_RetrieveProducts
+    usecase "Normalize Currency" as UC_Currency
+    usecase "Identify Best Available Price" as UC_BestPrice
+    usecase "Filter Products" as UC_Filter
+    usecase "Sort Products" as UC_Sort
+    usecase "Open Retailer Product Page" as UC_OpenRetailer
+  }
+
+  package "Experience, Reliability, and Operations" {
+    usecase "Display Outfit Cards and Item Details" as UC_Display
+    usecase "Show Loading, Errors, and Fallback Guidance" as UC_Feedback
+    usecase "Support Responsive and Accessible UI" as UC_UIQuality
+    usecase "Handle External API Failure Gracefully" as UC_Resilience
+    usecase "Record Recommendation and Security Audit Logs" as UC_Audit
+    usecase "Monitor Performance and API Health" as UC_Monitor
+    usecase "Administer Roles and Access" as UC_AdminAccess
+  }
+}
+
+' Primary user interactions
+Visitor -- UC_Register
+Visitor -- UC_Login
+
+User -- UC_Login
+User -- UC_Logout
+User -- UC_ResetPassword
+User -- UC_Profile
+User -- UC_Sizes
+User -- UC_Exclusions
+User -- UC_Location
+User -- UC_EventContext
+User -- UC_GenerateRecs
+User -- UC_Regenerate
+User -- UC_Display
+User -- UC_Filter
+User -- UC_Sort
+User -- UC_OpenRetailer
+User -- UC_SaveOutfit
+User -- UC_SaveItem
+User -- UC_ManageFavorites
+User -- UC_DeleteAccount
+
+Admin -- UC_AdminAccess
+Admin -- UC_Audit
+Admin -- UC_Monitor
+
+' External systems
+WeatherAPI -- UC_Weather
+ShopAPIs -- UC_RetrieveProducts
+EmailService -- UC_SendResetLink
+
+' Includes and dependencies
+UC_ResetPassword .> UC_SendResetLink : <<include>>
+UC_Login .> UC_Authenticate : <<include>>
+UC_Profile .> UC_Authorize : <<include>>
+UC_ManageFavorites .> UC_Authorize : <<include>>
+UC_DeleteAccount .> UC_Authorize : <<include>>
+UC_AdminAccess .> UC_Authorize : <<include>>
+
+UC_GenerateRecs .> UC_Weather : <<include>>
+UC_GenerateRecs .> UC_Rank : <<include>>
+UC_GenerateRecs .> UC_WeatherRules : <<include>>
+UC_GenerateRecs .> UC_ApplyExclusions : <<include>>
+UC_GenerateRecs .> UC_Explain : <<include>>
+UC_GenerateRecs .> UC_Confidence : <<include>>
+UC_Regenerate .> UC_GenerateRecs : <<include>>
+
+UC_Display .> UC_MapProducts : <<include>>
+UC_MapProducts .> UC_RetrieveProducts : <<include>>
+UC_RetrieveProducts .> UC_Currency : <<include>>
+UC_RetrieveProducts .> UC_BestPrice : <<include>>
+
+UC_Filter .> UC_Display : <<extend>>
+UC_Sort .> UC_Display : <<extend>>
+
+UC_GenerateRecs .> UC_Feedback : <<include>>
+UC_RetrieveProducts .> UC_Resilience : <<include>>
+UC_GenerateRecs .> UC_Audit : <<include>>
+UC_Login .> UC_Audit : <<include>>
+UC_DeleteAccount .> UC_Audit : <<include>>
+
+note bottom of UC_GenerateRecs
+  Covers recommendation behavior requirements:
+  context-aware generation, ranking, weather/event fit,
+  exclusions, explainability, and confidence tips.
+end note
+
+note bottom of UC_RetrieveProducts
+  Covers shopping requirements:
+  multi-source price and stock retrieval,
+  best-price identification, and product linking.
+end note
+
+note right of UC_UIQuality
+  Covers UX quality requirements:
+  responsive behavior across device sizes,
+  keyboard accessibility, and readable contrast.
+end note
+
+note right of UC_Monitor
+  Covers non-functional operations requirements:
+  performance targets, availability, observability,
+  and API health monitoring.
+end note
+
+@enduml

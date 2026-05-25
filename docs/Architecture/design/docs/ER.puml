@@ -1,0 +1,374 @@
+@startuml
+title WearItRight - Entity Relationship Diagram
+
+skinparam linetype ortho
+skinparam entityBackgroundColor #F8FAFC
+skinparam entityBorderColor #334155
+skinparam entityFontSize 12
+skinparam ArrowColor #475569
+
+' ─────────────────────────────────────────────
+' IDENTITY AND ACCESS
+' ─────────────────────────────────────────────
+
+entity "user" as user {
+  * id : UUID <<PK>>
+  --
+  * email : VARCHAR(255)
+  * password_hash : VARCHAR(255)
+  * status : VARCHAR(20)
+  * created_at : TIMESTAMP
+  last_login_at : TIMESTAMP
+}
+
+entity "role" as role {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(20)
+}
+
+entity "user_role" as user_role {
+  * user_id : UUID <<FK>>
+  * role_id : UUID <<FK>>
+}
+
+entity "user_session" as user_session {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * access_token : VARCHAR(512)
+  * expires_at : TIMESTAMP
+  * is_active : BOOLEAN
+}
+
+entity "password_reset_token" as prt {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * token : VARCHAR(512)
+  * expires_at : TIMESTAMP
+  used_at : TIMESTAMP
+}
+
+entity "consent_record" as consent_record {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * consent_type : VARCHAR(30)
+  * granted : BOOLEAN
+  * recorded_at : TIMESTAMP
+}
+
+' ─────────────────────────────────────────────
+' PROFILE AND PREFERENCES
+' ─────────────────────────────────────────────
+
+entity "user_preferences" as user_preferences {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  budget_min : DECIMAL(10,2)
+  budget_max : DECIMAL(10,2)
+  display_currency : CHAR(3)
+  * updated_at : TIMESTAMP
+}
+
+entity "user_style_preference" as user_style_pref {
+  * id : UUID <<PK>>
+  --
+  * user_preferences_id : UUID <<FK>>
+  * preference_value : VARCHAR(100)
+}
+
+entity "user_preferred_color" as user_pref_color {
+  * id : UUID <<PK>>
+  --
+  * user_preferences_id : UUID <<FK>>
+  * color_value : VARCHAR(50)
+}
+
+entity "size_profile" as size_profile {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  top_size : VARCHAR(10)
+  bottom_size : VARCHAR(10)
+  footwear_size : VARCHAR(10)
+}
+
+entity "exclusion_preferences" as exclusion_prefs {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+}
+
+entity "exclusion_color" as excl_color {
+  * id : UUID <<PK>>
+  --
+  * exclusion_id : UUID <<FK>>
+  * color_value : VARCHAR(50)
+}
+
+entity "exclusion_pattern" as excl_pattern {
+  * id : UUID <<PK>>
+  --
+  * exclusion_id : UUID <<FK>>
+  * pattern_value : VARCHAR(100)
+}
+
+entity "exclusion_category" as excl_category {
+  * id : UUID <<PK>>
+  --
+  * exclusion_id : UUID <<FK>>
+  * category : VARCHAR(30)
+}
+
+' ─────────────────────────────────────────────
+' CONTEXT AND RECOMMENDATION
+' ─────────────────────────────────────────────
+
+entity "location_context" as location_context {
+  * id : UUID <<PK>>
+  --
+  * source : VARCHAR(15)
+  * city : VARCHAR(100)
+  * country_code : CHAR(2)
+  latitude : DECIMAL(9,6)
+  longitude : DECIMAL(9,6)
+  * captured_at : TIMESTAMP
+}
+
+note bottom of location_context
+  LLR 12.4: Precise geolocation (lat/lon)
+  stored only with active user consent.
+  Not retained as historical log.
+end note
+
+entity "event_context" as event_context {
+  * id : UUID <<PK>>
+  --
+  * event_type : VARCHAR(20)
+  dress_code : VARCHAR(30)
+  event_time : VARCHAR(10)
+}
+
+entity "weather_snapshot" as weather_snapshot {
+  * id : UUID <<PK>>
+  --
+  * temperature_c : DECIMAL(5,2)
+  * precipitation_chance : DECIMAL(5,2)
+  * humidity : DECIMAL(5,2)
+  wind_kph : DECIMAL(5,2)
+  * observed_at : TIMESTAMP
+  * expires_at : TIMESTAMP
+}
+
+note bottom of weather_snapshot
+  LLR 13.4: Cached with configurable TTL
+  (default max 30 min, NFR-09).
+end note
+
+entity "recommendation_request" as rec_request {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * location_context_id : UUID <<FK>>
+  * event_context_id : UUID <<FK>>
+  * weather_snapshot_id : UUID <<FK>>
+  * requested_at : TIMESTAMP
+}
+
+entity "outfit_recommendation" as outfit_rec {
+  * id : UUID <<PK>>
+  --
+  * request_id : UUID <<FK>>
+  * rank : INTEGER
+  * relevance_score : DECIMAL(5,4)
+  * estimated_total_price : DECIMAL(10,2)
+  * created_at : TIMESTAMP
+}
+
+entity "outfit_item" as outfit_item {
+  * id : UUID <<PK>>
+  --
+  * outfit_id : UUID <<FK>>
+  * category : VARCHAR(20)
+  * is_optional : BOOLEAN
+}
+
+entity "recommendation_explanation" as rec_explanation {
+  * id : UUID <<PK>>
+  --
+  * outfit_id : UUID <<FK>>
+  * weather_reason : TEXT
+  * event_reason : TEXT
+}
+
+entity "style_tip" as style_tip {
+  * id : UUID <<PK>>
+  --
+  * outfit_id : UUID <<FK>>
+  * tip_text : TEXT
+}
+
+' ─────────────────────────────────────────────
+' SHOPPING AND COMPARISON
+' ─────────────────────────────────────────────
+
+entity "shopping_provider" as shopping_provider {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(100)
+  * api_base_url : VARCHAR(255)
+  * is_active : BOOLEAN
+}
+
+entity "product_item" as product_item {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(255)
+  * brand : VARCHAR(100)
+  * category : VARCHAR(20)
+  color : VARCHAR(50)
+  image_url : VARCHAR(512)
+}
+
+entity "product_offer" as product_offer {
+  * id : UUID <<PK>>
+  --
+  * product_item_id : UUID <<FK>>
+  * provider_id : UUID <<FK>>
+  * currency : CHAR(3)
+  * price : DECIMAL(10,2)
+  * normalized_price : DECIMAL(10,2)
+  * in_stock : BOOLEAN
+  * product_url : VARCHAR(512)
+  * last_checked_at : TIMESTAMP
+}
+
+entity "product_match" as product_match {
+  * id : UUID <<PK>>
+  --
+  * outfit_item_id : UUID <<FK>>
+  * product_item_id : UUID <<FK>>
+  * match_score : DECIMAL(5,4)
+}
+
+entity "price_comparison_result" as price_comparison {
+  * id : UUID <<PK>>
+  --
+  * product_item_id : UUID <<FK>>
+  * best_offer_id : UUID <<FK>>
+  * calculated_at : TIMESTAMP
+}
+
+' ─────────────────────────────────────────────
+' FAVORITES
+' ─────────────────────────────────────────────
+
+entity "favorite_outfit" as favorite_outfit {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * outfit_id : UUID <<FK>>
+  * saved_at : TIMESTAMP
+}
+
+entity "favorite_item" as favorite_item {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * offer_id : UUID <<FK>>
+  * saved_at : TIMESTAMP
+}
+
+' ─────────────────────────────────────────────
+' OPERATIONS AND QUALITY
+' ─────────────────────────────────────────────
+
+entity "audit_log" as audit_log {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  * event_type : VARCHAR(30)
+  * correlation_id : VARCHAR(100)
+  event_data : JSON
+  * created_at : TIMESTAMP
+}
+
+entity "metric_sample" as metric_sample {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(100)
+  * value : DECIMAL(15,4)
+  tags : JSON
+  * recorded_at : TIMESTAMP
+}
+
+entity "resilience_policy" as resilience_policy {
+  * id : UUID <<PK>>
+  --
+  * target_system : VARCHAR(100)
+  * timeout_ms : INTEGER
+  * retry_count : INTEGER
+  * circuit_breaker_threshold : INTEGER
+}
+
+' ─────────────────────────────────────────────
+' RELATIONSHIPS - Identity and Access
+' ─────────────────────────────────────────────
+
+user          ||--o{ user_role             : "assigned"
+role          ||--o{ user_role             : "granted to"
+user          ||--o{ user_session          : "maintains"
+user          ||--o{ prt                   : "requests"
+user          ||--o{ consent_record        : "records"
+user          ||--o{ audit_log             : "generates"
+
+' ─────────────────────────────────────────────
+' RELATIONSHIPS - Profile and Preferences
+' ─────────────────────────────────────────────
+
+user              ||--||  user_preferences     : "has"
+user_preferences  ||--o{  user_style_pref      : "lists"
+user_preferences  ||--o{  user_pref_color      : "lists"
+user              ||--||  size_profile         : "has"
+user              ||--||  exclusion_prefs      : "has"
+exclusion_prefs   ||--o{  excl_color           : "excludes"
+exclusion_prefs   ||--o{  excl_pattern         : "excludes"
+exclusion_prefs   ||--o{  excl_category        : "excludes"
+
+' ─────────────────────────────────────────────
+' RELATIONSHIPS - Context and Recommendation
+' ─────────────────────────────────────────────
+
+user             ||--o{  rec_request        : "submits"
+rec_request      }o--||  location_context   : "uses"
+rec_request      }o--||  event_context      : "uses"
+rec_request      }o--||  weather_snapshot   : "uses"
+rec_request      ||--|{  outfit_rec         : "produces"
+outfit_rec       ||--|{  outfit_item        : "contains"
+outfit_rec       ||--||  rec_explanation    : "explained by"
+outfit_rec       ||--|{  style_tip          : "enriched with"
+
+' ─────────────────────────────────────────────
+' RELATIONSHIPS - Shopping and Comparison
+' ─────────────────────────────────────────────
+
+outfit_item       ||--o{  product_match      : "matched via"
+product_match     }o--||  product_item       : "references"
+product_item      ||--|{  product_offer      : "offered via"
+product_offer     }o--||  shopping_provider  : "sourced from"
+product_item      ||--o|  price_comparison   : "ranked in"
+price_comparison  }o--||  product_offer      : "best offer"
+
+' ─────────────────────────────────────────────
+' RELATIONSHIPS - Favorites
+' ─────────────────────────────────────────────
+
+user          ||--o{  favorite_outfit   : "saves"
+favorite_outfit  }o--||  outfit_rec     : "references"
+user          ||--o{  favorite_item     : "saves"
+favorite_item    }o--||  product_offer  : "references"
+
+@enduml

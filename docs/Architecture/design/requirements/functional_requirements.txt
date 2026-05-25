@@ -1,0 +1,97 @@
+WearItRight - Functional Requirements
+
+FR-01 User Registration
+The system shall allow a new user to create an account using email and password.
+
+FR-02 User Authentication
+The system shall allow registered users to log in and log out securely.
+
+FR-03 Password Recovery
+The system shall allow users to reset forgotten passwords through an email verification flow.
+
+FR-04 Profile Management
+The system shall allow users to create and update profile preferences, including style, body fit, size, preferred colors, and budget.
+
+FR-05 Exclusion Preferences
+The system shall allow users to define clothing exclusions (for example disliked colors, patterns, and categories) and apply them to recommendations.
+
+FR-06 Location Input
+The system shall allow users to provide location manually or via browser geolocation consent.
+
+FR-07 Weather Context Retrieval
+The system shall retrieve weather context for a user-selected location and use it in outfit recommendations.
+
+FR-08 Event Context Input
+The system shall allow users to select event type and dress code context for recommendation generation.
+
+FR-09 Outfit Recommendation Generation
+The system shall generate multiple outfit recommendations based on profile preferences, weather, and event context.
+
+FR-10 Recommendation Composition
+The system shall present each recommendation as a complete outfit including core clothing components and optional accessories.
+
+FR-11 Recommendation Ranking
+The system shall rank generated recommendations by relevance to user profile, weather suitability, and event suitability.
+
+FR-12 Recommendation Explanation
+The system shall provide a clear explanation of why each outfit is recommended, including weather and event fit.
+
+FR-13 Confidence Guidance
+The system shall provide confidence-building styling tips for each recommended outfit.
+
+FR-14 Regenerate Recommendations
+The system shall allow users to regenerate recommendations using the same or updated context.
+
+FR-15 Outfit Display
+The system shall display recommendation cards with outfit details including item names, images, source store, and estimated total cost.
+
+FR-16 Item Detail View
+The system shall allow users to view expanded details for each item within a recommendation.
+
+FR-17 Product Matching
+The system shall map recommended outfit components to purchasable products from integrated shopping sources.
+
+FR-18 Price Aggregation
+The system shall retrieve and display product prices from multiple sources and identify the best available price.
+
+FR-19 Stock Awareness
+The system shall indicate product stock status and exclude unavailable items from default shopping results.
+
+FR-20 External Shopping Redirect
+The system shall allow users to open selected product pages on external retailer sites.
+
+FR-21 Filtering Capabilities
+The system shall allow users to filter recommendation-linked products by price, brand, size availability, color, and store.
+
+FR-22 Sorting Capabilities
+The system shall allow users to sort recommendation-linked products by relevance and price.
+
+FR-23 Favorite Outfits
+The system shall allow users to save and remove outfit recommendations in a personal favorites list.
+
+FR-24 Favorite Items
+The system shall allow users to save and remove individual shopping items in a personal saved-items list.
+
+FR-25 Favorites Persistence
+The system shall persist favorites and saved items per authenticated user account.
+
+FR-26 Responsive Experience
+The system shall provide equivalent functional behavior across mobile and desktop web browsers.
+
+FR-27 Accessible Interaction
+The system shall support keyboard-accessible navigation and operation for all primary user flows.
+
+FR-28 Error Handling
+The system shall show actionable error messages when weather, recommendation, or shopping data cannot be retrieved.
+
+FR-29 Security and Access Control
+The system shall enforce authenticated access to profile and saved-data features and authorize user actions by role.
+
+FR-30 Account and Data Deletion
+The system shall allow users to delete their account and associated personal data.
+
+FR-31 External API Resilience
+The system shall continue core recommendation flow with graceful degradation when one or more external shopping sources are unavailable.
+
+FR-32 Request Traceability
+The system shall record recommendation request inputs and resulting recommendation outputs for audit and troubleshooting.

@@ -1,0 +1,104 @@
+WearItRight - Low-Level Requirements
+
+1. User Account and Profile Management
+
+1.1 The system shall provide user registration using email and password.
+1.2 The system shall enforce password rules: minimum 8 characters, at least one uppercase letter, one lowercase letter, and one digit.
+1.3 The system shall provide user login and logout functionality.
+1.4 The system shall support password reset via email verification link.
+1.5 The system shall allow users to create and update profile data: age range, gender preference (optional), body fit preference, style preference, preferred colors, and budget range.
+1.6 The system shall store user preferred clothing sizes (top, bottom, footwear).
+1.7 The system shall let users define disliked colors, patterns, and clothing categories to exclude from recommendations.
+
+2. Context Collection and Input
+
+2.1 The system shall allow users to select current location manually.
+2.2 The system shall allow users to grant browser geolocation access for automatic location detection.
+2.3 The system shall retrieve weather data for selected location, including temperature, precipitation chance, humidity, and wind level.
+2.4 The system shall allow users to select an event type from predefined options: casual, business, formal, outdoor, party, and date.
+2.5 The system shall allow users to specify event time (day or night).
+2.6 The system shall allow users to specify dress code level when applicable (for example smart casual, business formal, black tie).
+
+3. Recommendation Engine Behavior
+
+3.1 The system shall generate at least 3 outfit recommendations per request.
+3.2 Each outfit recommendation shall contain at minimum: top, bottom, footwear, and one optional accessory.
+3.3 The system shall rank recommendations by relevance score derived from weather suitability, event suitability, and user preferences.
+3.4 The system shall avoid recommending clothing items marked in user exclusions.
+3.5 The system shall include layering recommendations when temperature is below a configurable threshold.
+3.6 The system shall recommend water-resistant items when precipitation chance exceeds a configurable threshold.
+3.7 The system shall include a textual explanation for each recommendation describing weather fit and event fit.
+3.8 The system shall include at least one confidence-building style tip per recommended outfit.
+
+4. Outfit and Item Presentation
+
+4.1 The system shall display outfit cards containing item image, item name, category, brand, price, and source store.
+4.2 The system shall display a total estimated outfit price per recommendation.
+4.3 The system shall allow users to expand a recommendation to view item-level details.
+4.4 The system shall provide "regenerate recommendations" action while preserving same user context unless changed by user.
+4.5 The system shall display a "why this outfit" section for every recommendation.
+
+5. Shopping and Price Comparison
+
+5.1 The system shall map each recommended clothing component to one or more purchasable items from integrated shopping sources.
+5.2 The system shall retrieve current item price, currency, product URL, and stock availability from each source.
+5.3 The system shall normalize prices to a single display currency based on user preference.
+5.4 The system shall identify and label the lowest available price for each recommended item.
+5.5 The system shall allow users to open the external store product page in a new browser tab.
+5.6 The system shall exclude out-of-stock items from default results and allow optional inclusion via filter.
+
+6. Search, Filter, and Sort
+
+6.1 The system shall provide filters for price range, brand, size availability, color, and store.
+6.2 The system shall provide sorting by price ascending, price descending, relevance, and newest availability update.
+6.3 The system shall apply selected filters and sorting in under 2 seconds for up to 200 displayed items.
+
+7. Favorites and Saved Data
+
+7.1 The system shall allow users to save and unsave outfits to a favorites list.
+7.2 The system shall allow users to save and unsave individual shopping items.
+7.3 The system shall persist saved outfits and items per user account.
+7.4 The system shall display saved timestamp for each favorite entry.
+
+8. Notifications and User Feedback
+
+8.1 The system shall show clear error messages when recommendation generation fails.
+8.2 The system shall show fallback guidance when weather data is unavailable and allow manual weather input.
+8.3 The system shall provide loading indicators during recommendation and price retrieval operations.
+
+9. Security, Privacy, and Compliance
+
+9.1 The system shall use HTTPS for all client-server communication.
+9.2 The system shall store user passwords as salted, one-way cryptographic hashes.
+9.3 The system shall require authenticated access for profile, favorites, and saved items endpoints.
+9.4 The system shall implement role-based authorization with at least User and Admin roles.
+9.5 The system shall obtain explicit consent before using geolocation data.
+9.6 The system shall allow users to delete their account and associated personal data.
+9.7 The system shall log access and security-relevant events for auditing.
+
+10. Performance and Availability
+
+10.1 The system shall return recommendation results within 5 seconds for 95% of requests under normal load.
+10.2 The system shall support at least 500 concurrent active users without critical degradation.
+10.3 The system shall provide graceful degradation when one or more shopping sources are unavailable.
+
+11. Responsive UI and Accessibility
+
+11.1 The system shall provide responsive layouts for mobile (>=360px width), tablet, and desktop.
+11.2 The system shall ensure all interactive controls are keyboard accessible.
+11.3 The system shall provide text alternatives for all non-decorative images.
+11.4 The system shall maintain minimum color contrast ratio of 4.5:1 for body text.
+
+12. Data Model and Logging
+
+12.1 The system shall store entities for User, UserPreferences, RecommendationRequest, OutfitRecommendation, ProductItem, FavoriteOutfit, and FavoriteItem.
+12.2 The system shall timestamp all recommendation requests and results.
+12.3 The system shall log recommendation input parameters and resulting recommendation IDs for traceability.
+12.4 The system shall avoid storing precise geolocation history unless explicitly required and consented.
+
+13. External Integration Requirements
+
+13.1 The system shall integrate with at least one weather data provider API.
+13.2 The system shall integrate with at least two shopping/catalog providers for item and price retrieval.
+13.3 The system shall implement retry and timeout policies for external API calls.
+13.4 The system shall cache weather responses for a configurable duration to reduce repeated external calls.

@@ -1,0 +1,97 @@
+WearItRight - Non-Functional Requirements
+
+NFR-01 Performance - Recommendation Response Time
+The system shall return outfit recommendation responses within 5 seconds for at least 95% of requests under normal operating load.
+
+NFR-02 Performance - API Latency
+The system shall maintain backend API median response time (P50) below 800 ms and P95 below 2 seconds for core user actions.
+
+NFR-03 Performance - UI Interaction
+The system shall apply product filtering and sorting actions in under 2 seconds for result sets up to 200 items.
+
+NFR-04 Capacity and Scalability
+The system shall support at least 500 concurrent active users with no critical functional degradation.
+
+NFR-05 Availability
+The system shall provide monthly uptime of at least 99.5%, excluding scheduled maintenance windows announced in advance.
+
+NFR-06 Reliability - Fault Tolerance
+The system shall degrade gracefully when one or more external shopping providers are unavailable, while preserving core recommendation functionality.
+
+NFR-07 Reliability - External Calls
+The system shall implement retry, timeout, and circuit-breaker strategies for weather and shopping API calls.
+
+NFR-08 Data Freshness - Price Data
+Displayed product prices and availability shall be refreshed at least every 15 minutes for actively viewed items, subject to provider limits.
+
+NFR-09 Data Freshness - Weather Data
+Weather context data shall be cached for a configurable duration not exceeding 30 minutes by default.
+
+NFR-10 Security - Transport
+The system shall use TLS 1.2 or higher for all data in transit between clients, services, and integrated APIs.
+
+NFR-11 Security - Credential Storage
+The system shall store passwords using salted adaptive hashing algorithms (for example Argon2id, bcrypt, or PBKDF2) and never store plaintext passwords.
+
+NFR-12 Security - Access Control
+The system shall enforce authentication and role-based authorization for protected resources and administrative operations.
+
+NFR-13 Security - Session Management
+User sessions and tokens shall expire after a configurable inactivity period and be invalidated on logout.
+
+NFR-14 Security - Input Protection
+The system shall validate and sanitize all client-provided input and protect against OWASP Top 10 web risks (including XSS, CSRF, SQL injection, and broken access control).
+
+NFR-15 Privacy - Consent and Minimization
+The system shall collect geolocation only after explicit user consent and retain only the minimum personal data required for operation.
+
+NFR-16 Privacy - User Rights
+The system shall support user-requested account deletion and associated personal data deletion in accordance with applicable privacy regulations.
+
+NFR-17 Auditability
+The system shall log security events, authentication events, and recommendation request traces with timestamps and correlation identifiers.
+
+NFR-18 Observability - Monitoring
+The system shall expose metrics for latency, error rate, throughput, and external API health, and provide alerting for threshold breaches.
+
+NFR-19 Usability - Learnability
+A new user shall be able to complete the first recommendation flow (profile setup to outfit recommendation view) in 5 minutes or less without assistance.
+
+NFR-20 Usability - Clarity
+Error messages shall be actionable, human-readable, and include next-step guidance when operations fail.
+
+NFR-21 Accessibility - Standards Compliance
+The web application shall conform to WCAG 2.1 Level AA for all primary user journeys.
+
+NFR-22 Accessibility - Keyboard Support
+All interactive controls required for primary workflows shall be fully operable using keyboard-only navigation.
+
+NFR-23 Accessibility - Visual Design
+Text content shall maintain a minimum contrast ratio of 4.5:1 for normal text and 3:1 for large text.
+
+NFR-24 Compatibility - Browser Support
+The application shall support the latest two stable versions of Chrome, Edge, Firefox, and Safari.
+
+NFR-25 Compatibility - Device Responsiveness
+The user interface shall function correctly at viewport widths from 360 px and above across mobile, tablet, and desktop breakpoints.
+
+NFR-26 Maintainability - Architecture
+The system shall be organized into modular components/services with clear interfaces to enable independent updates and testing.
+
+NFR-27 Maintainability - Code Quality
+Code changes shall pass automated linting, unit tests, and integration tests in the CI pipeline before deployment.
+
+NFR-28 Testability - Coverage
+Automated test coverage shall be maintained at a minimum of 70% for business-critical backend modules.
+
+NFR-29 Deployability
+The system shall support automated deployment with rollback capability to the last known stable release.
+
+NFR-30 Recovery Objectives
+The system shall target a Recovery Time Objective (RTO) of 4 hours and a Recovery Point Objective (RPO) of 15 minutes for critical production data.
+
+NFR-31 Localization Readiness
+The application shall be designed to support internationalization of text and localization of currency and measurement formats.
+
+NFR-32 Legal and Compliance
+The system shall present terms of use and privacy notice at account creation and record user acceptance timestamps.

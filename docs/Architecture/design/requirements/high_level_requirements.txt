@@ -1,0 +1,25 @@
+WearItRight - High-Level Requirements
+
+1. The system shall provide a web-based application accessible on desktop and mobile browsers.
+
+2. The system shall allow users to create and manage personal profiles, including style preferences, body fit preferences, and budget range.
+
+3. The system shall collect and use user context data (for example location, weather conditions, and event type) to generate clothing style recommendations.
+
+4. The system shall recommend complete outfits appropriate for current and forecasted weather conditions.
+
+5. The system shall recommend clothing styles appropriate for common event categories (for example casual, business, formal, outdoor, and special occasions).
+
+6. The system shall provide confidence-focused guidance for each recommendation, including styling tips and explanation of why the outfit is suitable.
+
+7. The system shall enable users to browse and compare purchasable clothing items that match recommended styles.
+
+8. The system shall aggregate pricing information from available shopping sources and highlight best available prices for matching items.
+
+9. The system shall allow users to save favorite outfits and shopping items for later review.
+
+10. The system shall provide filtering and sorting options for recommended items based on price, brand, size availability, and relevance to the suggested style.
+
+11. The system shall protect user data and privacy by enforcing secure authentication, access control, and secure data handling practices.
+
+12. The system shall provide a responsive, easy-to-use user experience to help users quickly decide what to wear and where to buy it.
