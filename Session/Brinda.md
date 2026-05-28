@@ -37,3 +37,8 @@ I researched major cloud providers with data centers in Germany including AWS eu
 21/05/26
 I deployed Nginx using Docker Compose with nginx:alpine, configured a bind mount for live HTML editing on port 8080, verified the container with docker compose ps, tested custom content at localhost:8080, fixed a YAML syntax error, and stopped the service with docker compose down.
 Checked live Nginx logs using docker compose logs -f web, which showed worker processes starting and HTTP GET requests from 192.168.65.1 returning 304 status codes when accessing localhost.
+
+26/05/26
+Presented the WearItRight PPT and walked through key slides/features . Listened to feedback and took suggestions for improvements on our project. Asked questions and gave suggestions to the other team/project.
+Noted that the architecture and API models for some other projects were the same as ours — possible areas for reuse/collaboration.
+Document common architecture + API models to identify shared components. Follow up on suggestions received for WearItRight v2. Sync with other team on overlapping tech stack.
