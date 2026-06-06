@@ -42,3 +42,13 @@ Checked live Nginx logs using docker compose logs -f web, which showed worker pr
 Presented the WearItRight PPT and walked through key slides/features . Listened to feedback and took suggestions for improvements on our project. Asked questions and gave suggestions to the other team/project.
 Noted that the architecture and API models for some other projects were the same as ours — possible areas for reuse/collaboration.
 Document common architecture + API models to identify shared components. Follow up on suggestions received for WearItRight v2. Sync with other team on overlapping tech stack.
+
+28/05/26
+complete Part 0-1 MVC scaffold
+Built  folder structure with backend/frontend split. Implemented FastAPI MVC: main, schemas, controller, service layers. Added React View with API service + task list component. Configured docker-compose + Dockerfiles for both services
+
+02/06/26
+Frontend React + Backend FastAPI both running via Docker compose. UI renders correctly at localhost:3000 with input field and Add button. Edit, Save, Delete buttons display and respond to clicks. Clicking an item toggles Edit mode and applies strikethrough/cross-off effect. Clicking the checkbox also triggers cross-off, confirming frontend-backend data flow works.
+
+04/06/26
+Updated the UI styling for a cleaner look and pushed the full MVC repo to GitHub. Frontend and backend both run via Docker, and the interface now renders with Add, Edit, Save, Delete buttons plus checkbox cross-off working end-to-end.
