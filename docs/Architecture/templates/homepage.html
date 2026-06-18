@@ -109,12 +109,15 @@
       <div class="section-heading">
         <p class="section-label">Virtual Wardrobe</p>
         <h2>Upload your wardrobe</h2>
-        <p>For this frontend demo, upload at least three clothing images in the order top, bottom, and shoes.</p>
+        <p>Upload multiple clothing photos, mark their category, then generate a demo outfit for your plan.</p>
       </div>
 
       <div class="upload-box">
-        <label class="upload-label" for="clothingUpload">Choose clothing images</label>
+        <label class="upload-label" for="clothingUpload">Choose wardrobe images</label>
         <input type="file" id="clothingUpload" multiple accept="image/*">
+
+        <label class="upload-label" for="cameraUpload">Take photo on mobile</label>
+        <input type="file" id="cameraUpload" accept="image/*" capture="environment">
 
         <label class="select-label" for="occasion">Occasion</label>
         <select id="occasion">
@@ -123,10 +126,44 @@
           <option>Office</option>
           <option>Party</option>
           <option>Casual Day Out</option>
+          <option>Gym</option>
+          <option>Formal Event</option>
+        </select>
+
+        <label class="select-label" for="weather">Weather</label>
+        <select id="weather">
+          <option value="">Select weather</option>
+          <option>Sunny</option>
+          <option>Cloudy</option>
+          <option>Rainy</option>
+          <option>Cold</option>
+          <option>Hot</option>
+        </select>
+
+        <label class="select-label" for="stylePreference">Style preference</label>
+        <select id="stylePreference">
+          <option value="">Select style</option>
+          <option>Casual</option>
+          <option>Formal</option>
+          <option>Streetwear</option>
+          <option>Sporty</option>
+          <option>Minimal</option>
+          <option>No Preference</option>
         </select>
 
         <button id="generateBtn" type="button">Generate Outfit</button>
-        <p class="upload-hint">Demo logic: first image = top, second image = bottom, third image = shoes.</p>
+        <p class="upload-hint">Add at least one top, bottom, and shoes item. You can correct categories before generating.</p>
+      </div>
+
+      <div class="wardrobe-panel" id="wardrobePanel" hidden>
+        <div class="wardrobe-header">
+          <div>
+            <p class="section-label">Uploaded Items</p>
+            <h3>Your wardrobe</h3>
+          </div>
+          <span id="wardrobeCount">0 items</span>
+        </div>
+        <div class="wardrobe-grid" id="wardrobeGrid"></div>
       </div>
     </section>
 
@@ -170,11 +207,10 @@
 
         <div class="outfit-details">
           <p><strong>Occasion:</strong> <span id="selectedOccasion">College</span></p>
-          <p><strong>Weather:</strong> Cloudy, 18&deg;C</p>
+          <p><strong>Weather:</strong> <span id="selectedWeather">Cloudy</span></p>
+          <p><strong>Style:</strong> <span id="selectedStyle">Casual</span></p>
           <p class="ai-note">
-            <strong>AI Note:</strong> This combination is comfortable, practical, and suitable
-            for the selected occasion. In the final system, AI will classify wardrobe items
-            and generate smarter recommendations.
+            <strong>AI Note:</strong> <span id="aiNote">This demo chooses items from your wardrobe categories. In the final system, AI will classify images automatically.</span>
           </p>
 
           <div class="result-buttons">

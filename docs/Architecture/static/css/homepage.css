@@ -234,6 +234,7 @@ button {
 .feature-card,
 .outfit-card,
 .upload-box,
+.wardrobe-panel,
 .outfit-result-card,
 .weather-card {
   background: var(--surface);
@@ -347,6 +348,77 @@ button {
 
 .upload-hint {
   margin-top: 18px;
+  font-size: 14px;
+}
+
+.wardrobe-panel {
+  margin-top: 34px;
+  padding: 30px;
+  text-align: left;
+}
+
+.wardrobe-panel[hidden] {
+  display: none;
+}
+
+.wardrobe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.wardrobe-header h3 {
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+#wardrobeCount {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.wardrobe-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.wardrobe-card {
+  overflow: hidden;
+  background: #f9fafb;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.wardrobe-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.wardrobe-card-details {
+  padding: 14px;
+}
+
+.wardrobe-card-details p {
+  overflow: hidden;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wardrobe-card-details select {
+  width: 100%;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  color: var(--ink);
   font-size: 14px;
 }
 
@@ -560,6 +632,10 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .wardrobe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .recommendation-header {
     align-items: flex-start;
     flex-direction: column;
@@ -594,10 +670,20 @@ button {
   }
 
   .upload-box,
+  .wardrobe-panel,
   .outfit-result-card,
   .weather-card,
   .modal-content {
     padding: 26px;
+  }
+
+  .wardrobe-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wardrobe-grid {
+    grid-template-columns: 1fr;
   }
 
   .result-buttons,
