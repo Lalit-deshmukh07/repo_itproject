@@ -4,12 +4,17 @@ from flask_cors import CORS
 import sys
 import os
 
-# Add the nested src directory to Python path
-src_path = os.path.join(os.path.dirname(__file__), 'docs/Architecture/src')
+# Get absolute paths to ensure consistency across machines
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+src_path = os.path.join(BASE_DIR, 'docs/Architecture/src')
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-app = Flask(__name__)
+# Create Flask app with explicit template and static folders
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 CORS(app)
 
 # Now import auth blueprint after Flask is initialized

@@ -62,7 +62,7 @@ export default function App() {
 
     return (
         <div style={{ padding: '24px', fontFamily: 'Arial, sans-serif', maxWidth: '600px' }}>
-            <h1>MVC Lab - Tasks</h1>
+            <h1>Tasks</h1>
             
             <form onSubmit={handleAddTask} style={{ marginBottom: '24px', display: 'flex', gap: '8px' }}>
                 <input
@@ -92,13 +92,13 @@ export default function App() {
                 </button>
             </form>
 
-            {error && <p style={{ color: 'red', marginBottom: '16px' }}>{error}</p>}
+            {error && <p style={{ color: '#666', marginBottom: '16px' }}>No task added yet</p>}
             {loading && <p>Loading tasks...</p>}
             
             {!loading && !error && (
                 <div style={{ display: 'grid', gap: '12px' }}>
                     {tasks.length === 0 ? (
-                        <p style={{ color: '#666' }}>No tasks yet. Add one above!</p>
+                        <p style={{ color: '#666' }}>No task added yet</p>
                     ) : (
                         tasks.map((task) => (
                             <div
