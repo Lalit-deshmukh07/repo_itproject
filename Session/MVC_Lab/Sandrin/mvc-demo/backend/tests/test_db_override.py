@@ -11,6 +11,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from app.database import Base
+from app.hashing import hash_password
 from app import main
 
 
@@ -33,7 +34,7 @@ def test_users_endpoint_uses_test_db(in_memory_db):
     # seed a user directly using a session
     db = in_memory_db()
     from app.models import User
-    u = User(name='TestUser')
+    u = User(name='TestUser', password_hash=hash_password('password123'))
     db.add(u)
     db.commit()
     db.refresh(u)
@@ -49,7 +50,7 @@ def test_users_with_tasks_endpoint(in_memory_db):
     client = main.app.test_client()
     db = in_memory_db()
     from app.models import User, Task
-    u = User(name='U1')
+    u = User(name='U1', password_hash=hash_password('password123'))
     db.add(u)
     db.commit()
     db.refresh(u)

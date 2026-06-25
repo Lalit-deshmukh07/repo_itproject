@@ -8,7 +8,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
+    last_login_token: Mapped[str | None] = mapped_column(String(500), nullable=True)
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="owner")
 
 

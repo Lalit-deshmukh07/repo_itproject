@@ -4,4 +4,6 @@ SQLAlchemy==2.0.22
 psycopg2-binary==2.9.9
 pydantic==2.5.0
 alembic==1.12.1
+passlib==1.7.4
+PyJWT==2.8.0
 pytest

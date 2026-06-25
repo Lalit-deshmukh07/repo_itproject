@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchTasks, fetchUsers, createTask, deleteTask, updateTask } from './services/api';
+import { fetchTasks, fetchUsers, fetchCurrentUser, createTask, deleteTask, updateTask, login, register, logout, isLoggedIn } from './services/api';
 
 // Local fallback users in case the backend user list isn't available yet
 const FALLBACK_USERS = [
@@ -15,12 +15,16 @@ const FALLBACK_USERS = [
 export default function App() {
     const [tasks, setTasks] = useState([]);
     const [users, setUsers] = useState(FALLBACK_USERS);
-    const [selectedOwnerId, setSelectedOwnerId] = useState(String(FALLBACK_USERS[0].id));
+    const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [input, setInput] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingTitle, setEditingTitle] = useState('');
+    const [authMode, setAuthMode] = useState('login');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn());
 
     const loadUsers = () => {
         fetchUsers()
@@ -35,7 +39,6 @@ export default function App() {
                         }
                     }
                     setUsers(combined);
-                    if (!selectedOwnerId && combined.length > 0) setSelectedOwnerId(String(combined[0].id));
                 }
             })
             .catch((err) => {
@@ -62,14 +65,57 @@ export default function App() {
 
     useEffect(() => {
         loadUsers();
-        loadTasks();
-    }, []);
+        if (isAuthenticated) {
+            loadCurrentUser();
+            loadTasks();
+        } else {
+            setTasks([]);
+            setLoading(false);
+        }
+    }, [isAuthenticated]);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError(null);
+        try {
+            await login(username, password);
+            setIsAuthenticated(true);
+            setUsername('');
+            setPassword('');
+            await loadCurrentUser();
+            loadTasks();
+            loadUsers();
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setError(null);
+        try {
+            await register(username, password);
+            setAuthMode('login');
+            setUsername('');
+            setPassword('');
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleLogout = () => {
+        logout();
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setTasks([]);
+        setUsers(FALLBACK_USERS);
+    };
 
     const handleAddTask = async (e) => {
         e.preventDefault();
-        if (!input.trim() || !selectedOwnerId) return;
+        if (!input.trim()) return;
         try {
-            await createTask(input, Number(selectedOwnerId));
+            await createTask(input);
             setInput('');
             loadTasks();
         } catch (err) {
@@ -103,6 +149,15 @@ export default function App() {
         [users],
     );
 
+    const loadCurrentUser = async () => {
+        try {
+            const user = await fetchCurrentUser();
+            setCurrentUser(user);
+        } catch (err) {
+            console.warn('Failed to load current user', err);
+        }
+    };
+
     return (
         <div
             style={{
@@ -129,6 +184,112 @@ export default function App() {
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                     <h1 style={{ margin: 0, fontSize: '3rem', color: '#1D4ED8' }}>Task</h1>
                 </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        alignItems: 'center',
+                        marginBottom: '24px',
+                    }}
+                >
+                    <div>
+                        <button
+                            onClick={() => setAuthMode('login')}
+                            style={{
+                                padding: '12px 18px',
+                                borderRadius: '20px',
+                                border: authMode === 'login' ? '2px solid #4338CA' : '1px solid #E5E7EB',
+                                background: authMode === 'login' ? '#EEF2FF' : '#FFFFFF',
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                            }}
+                        >
+                            Login
+                        </button>
+                        <button
+                            onClick={() => setAuthMode('register')}
+                            style={{
+                                padding: '12px 18px',
+                                borderRadius: '20px',
+                                border: authMode === 'register' ? '2px solid #4338CA' : '1px solid #E5E7EB',
+                                background: authMode === 'register' ? '#EEF2FF' : '#FFFFFF',
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                                marginLeft: '10px',
+                            }}
+                        >
+                            Register
+                        </button>
+                    </div>
+                    {currentUser ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ color: '#4B5563' }}>Logged in as {currentUser.name}</span>
+                            <button
+                                onClick={handleLogout}
+                                style={{
+                                    padding: '12px 18px',
+                                    borderRadius: '20px',
+                                    border: 'none',
+                                    background: '#EF4444',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
+                {!isAuthenticated ? (
+                    <form
+                        onSubmit={authMode === 'login' ? handleLogin : handleRegister}
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr auto',
+                            gap: '12px',
+                            marginBottom: '24px',
+                        }}
+                    >
+                        <input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder={authMode === 'login' ? 'Username' : 'Name'}
+                            style={{
+                                padding: '16px 18px',
+                                borderRadius: '20px',
+                                border: '1px solid #E5E7EB',
+                                width: '100%',
+                            }}
+                        />
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Password"
+                            style={{
+                                padding: '16px 18px',
+                                borderRadius: '20px',
+                                border: '1px solid #E5E7EB',
+                                width: '100%',
+                            }}
+                        />
+                        <button
+                            type="submit"
+                            style={{
+                                padding: '16px 0',
+                                borderRadius: '20px',
+                                border: 'none',
+                                background: '#4338CA',
+                                color: 'white',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            {authMode === 'login' ? 'Login' : 'Register'}
+                        </button>
+                    </form>
+                ) : null}
 
                 <form
                     onSubmit={handleAddTask}
@@ -153,24 +314,6 @@ export default function App() {
                             width: '100%',
                         }}
                     />
-                    <select
-                        value={selectedOwnerId}
-                        onChange={(e) => setSelectedOwnerId(e.target.value)}
-                        style={{
-                            padding: '16px 18px',
-                            borderRadius: '20px',
-                            border: '1px solid #E5E7EB',
-                            fontSize: '1rem',
-                            width: '100%',
-                        }}
-                    >
-                        <option value="">Select owner</option>
-                        {users.map((user) => (
-                            <option key={user.id} value={user.id}>
-                                {user.name}
-                            </option>
-                        ))}
-                    </select>
                     <button
                         type="submit"
                         style={{
@@ -182,13 +325,20 @@ export default function App() {
                             fontWeight: 700,
                             cursor: 'pointer',
                         }}
+                        disabled={!isAuthenticated}
                     >
                         Add task
                     </button>
                 </form>
 
-                <p style={{ color: '#6B7280', marginBottom: '12px' }}>Select an owner and click Add task.</p>
+                <p style={{ color: '#6B7280', marginBottom: '12px' }}>Enter a task title and click Add task.</p>
                 {loading && <p style={{ color: '#6B7280' }}>Loading tasks...</p>}
+
+                {!loading && !isAuthenticated ? (
+                    <p style={{ color: '#DC2626', marginBottom: '24px' }}>
+                        You must login or register before managing tasks.
+                    </p>
+                ) : null}
 
                 {!loading && (
                     <div style={{ display: 'grid', gap: '16px' }}>

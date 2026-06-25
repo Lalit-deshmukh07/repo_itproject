@@ -9,13 +9,21 @@ PORT = int(os.environ.get('PORT', '8000'))
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, text, inspect
+
+from alembic import command
+from alembic.config import Config
+
+from app.controllers.auth_controller import auth_router, get_current_user
 
 from app.database import SessionLocal, engine, Base
+from app.hashing import hash_password
 from app.models import User, Task
 from app.schemas import UserSchema, UserWithTasks, Task as TaskSchema, TaskCreate
+from app.services.task_service import TaskService, TaskNotFoundError, NotAuthorizedError, UserNotFoundError
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select
 
 app = Flask(__name__)
 CORS(app)
@@ -34,14 +42,15 @@ def seed_db():
     db = SessionLocal()
     try:
         if db.query(User).first() is None:
+            default_password = hash_password("password123")
             default_users = [
-                User(name="Alice"),
-                User(name="Bob"),
-                User(name="Brinda"),
-                User(name="Deval"),
-                User(name="Lalit"),
-                User(name="Grishma"),
-                User(name="Sandrin"),
+                User(name="Alice", password_hash=default_password),
+                User(name="Bob", password_hash=default_password),
+                User(name="Brinda", password_hash=default_password),
+                User(name="Deval", password_hash=default_password),
+                User(name="Lalit", password_hash=default_password),
+                User(name="Grishma", password_hash=default_password),
+                User(name="Sandrin", password_hash=default_password),
             ]
             db.add_all(default_users)
             db.commit()
@@ -73,85 +82,102 @@ def users_with_tasks():
 
 @app.route('/tasks', methods=['GET'])
 def list_tasks():
+    current_user = get_current_user()
+    if current_user is None:
+        return jsonify({'detail': 'Missing or invalid authorization header'}), 401
+
     db = SessionLocal()
     try:
-        tasks = db.query(Task).all()
-        return jsonify([TaskSchema.model_validate(t).model_dump(mode='json') for t in tasks])
+        service = TaskService(db)
+        tasks = service.list_tasks(current_user.id)
+        return jsonify(tasks)
     finally:
         db.close()
 
 
 @app.route('/tasks', methods=['POST'])
 def create_task():
+    current_user = get_current_user()
+    if current_user is None:
+        return jsonify({'detail': 'Missing or invalid authorization header'}), 401
+
     data = request.get_json() or {}
-    
+
     try:
         task_create = TaskCreate(**data)
-    except ValueError as e:
+    except (ValidationError, ValueError) as e:
         return jsonify({'detail': str(e)}), 422
-    
+
     db = SessionLocal()
     try:
-        # Check if owner exists
-        owner = db.query(User).filter(User.id == task_create.owner_id).first()
-        if not owner:
-            return jsonify({'detail': 'Owner not found'}), 404
-        
-        task = Task(title=task_create.title, owner_id=task_create.owner_id)
-        db.add(task)
-        db.commit()
-        db.refresh(task)
-        return jsonify(TaskSchema.model_validate(task).model_dump(mode='json')), 201
-    except IntegrityError:
-        db.rollback()
-        return jsonify({'detail': 'Database error'}), 500
+        service = TaskService(db)
+        task = service.create_task(task_create.title, current_user.id)
+        return jsonify(task), 201
+    except UserNotFoundError:
+        return jsonify({'detail': 'User not found'}), 404
+    except ValueError as e:
+        return jsonify({'detail': str(e)}), 422
     finally:
         db.close()
 
 
 @app.route('/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
+    current_user = get_current_user()
+    if current_user is None:
+        return jsonify({'detail': 'Missing or invalid authorization header'}), 401
+
     db = SessionLocal()
     try:
-        task = db.query(Task).filter(Task.id == task_id).first()
-        if not task:
-            return jsonify({'detail': 'Task not found'}), 404
-        return jsonify(TaskSchema.model_validate(task).model_dump(mode='json'))
+        service = TaskService(db)
+        task = service.get_task(task_id, current_user.id)
+        return jsonify(task)
+    except TaskNotFoundError:
+        return jsonify({'detail': 'Task not found'}), 404
+    except NotAuthorizedError:
+        return jsonify({'detail': 'Not authorized'}), 403
     finally:
         db.close()
 
 
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
+    current_user = get_current_user()
+    if current_user is None:
+        return jsonify({'detail': 'Missing or invalid authorization header'}), 401
+
     data = request.get_json() or {}
     
     db = SessionLocal()
     try:
-        task = db.query(Task).filter(Task.id == task_id).first()
-        if not task:
-            return jsonify({'detail': 'Task not found'}), 404
-        
-        if 'title' in data and data['title']:
-            task.title = data['title'].strip()
-            db.commit()
-            db.refresh(task)
-        
-        return jsonify(TaskSchema.model_validate(task).model_dump(mode='json'))
+        service = TaskService(db)
+        task = service.update_task(task_id, data.get('title'), current_user.id)
+        return jsonify(task)
+    except TaskNotFoundError:
+        return jsonify({'detail': 'Task not found'}), 404
+    except NotAuthorizedError:
+        return jsonify({'detail': 'Not authorized'}), 403
+    except ValueError as e:
+        return jsonify({'detail': str(e)}), 422
     finally:
         db.close()
 
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
+    current_user = get_current_user()
+    if current_user is None:
+        return jsonify({'detail': 'Missing or invalid authorization header'}), 401
+
     db = SessionLocal()
     try:
-        task = db.query(Task).filter(Task.id == task_id).first()
-        if not task:
-            return jsonify({'detail': 'Task not found'}), 404
-        
-        db.delete(task)
-        db.commit()
+        service = TaskService(db)
+        service.delete_task(task_id, current_user.id)
         return '', 204
+    except TaskNotFoundError:
+        return jsonify({'detail': 'Task not found'}), 404
+    except NotAuthorizedError:
+        return jsonify({'detail': 'Not authorized'}), 403
     finally:
         db.close()
 
@@ -259,13 +285,57 @@ def openapi_json():
                     "get": {"summary": "Get task","parameters": [{"name": "task_id","in": "path","required": True,"schema": {"type": "integer"}}],"responses": {"200": {"description": "Task"}}},
                     "put": {"summary": "Update task","parameters": [{"name": "task_id","in": "path","required": True,"schema": {"type": "integer"}}],"requestBody": {"content": {"application/json": {"schema": {"type": "object","properties": {"title": {"type": "string"}}}}}},"responses": {"200": {"description": "Updated"}}},
                     "delete": {"summary": "Delete task","parameters": [{"name": "task_id","in": "path","required": True,"schema": {"type": "integer"}}],"responses": {"204": {"description": "Deleted"}}}
+                },
+                "/auth/register": {
+                    "post": {
+                        "summary": "Register",
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/RegisterRequest"}
+                                }
+                            }
+                        },
+                        "responses": {"201": {"description": "Created user"}, "409": {"description": "User already exists"}, "422": {"description": "Validation error"}}
+                    }
+                },
+                "/auth/login": {
+                    "post": {
+                        "summary": "Login",
+                        "requestBody": {
+                            "content": {
+                                "application/x-www-form-urlencoded": {
+                                    "schema": {"$ref": "#/components/schemas/LoginRequest"}
+                                }
+                            }
+                        },
+                        "responses": {"200": {"description": "Token response"}, "401": {"description": "Incorrect credentials"}, "422": {"description": "Validation error"}}
+                    }
+                },
+                "/auth/me": {
+                    "get": {
+                        "summary": "Me",
+                        "security": [{"bearerAuth": []}],
+                        "responses": {"200": {"description": "Authenticated user"}, "401": {"description": "Unauthorized"}, "404": {"description": "User not found"}}
+                    }
                 }
             },
             "components": {
                 "schemas": {
                     "User": {"type": "object","properties": {"id": {"type": "integer"}, "name": {"type": "string"}}},
                     "Task": {"type": "object","properties": {"id": {"type": "integer"}, "title": {"type": "string"}, "owner_id": {"type": "integer"}, "created_at": {"type": "string"}}},
-                    "TaskCreate": {"type": "object","required": ["title","owner_id"],"properties": {"title": {"type": "string"}, "owner_id": {"type": "integer"}}}
+                    "TaskCreate": {"type": "object","required": ["title"],"properties": {"title": {"type": "string"}}},
+                    "RegisterRequest": {"type": "object","properties": {"name": {"type": "string"}, "password": {"type": "string"}}, "required": ["name", "password"]},
+                    "LoginRequest": {"type": "object","properties": {"username": {"type": "string"}, "password": {"type": "string"}}, "required": ["username", "password"]},
+                    "TokenResponse": {"type": "object","properties": {"access_token": {"type": "string"}, "token_type": {"type": "string"}}},
+                    "User": {"type": "object","properties": {"id": {"type": "integer"}, "name": {"type": "string"}, "last_login_token": {"type": "string"}}}
+                },
+                "securitySchemes": {
+                    "bearerAuth": {
+                        "type": "http",
+                        "scheme": "bearer",
+                        "bearerFormat": "JWT"
+                    }
                 }
             }
         }
@@ -301,7 +371,31 @@ def swagger_ui():
     return html, 200, {'Content-Type': 'text/html'}
 
 
+app.register_blueprint(auth_router)
+
+
+def run_migrations() -> None:
+    alembic_cfg = Config(os.path.join(os.path.dirname(__file__), '..', 'alembic.ini'))
+    alembic_cfg.set_main_option('sqlalchemy.url', os.environ.get('DATABASE_URL', alembic_cfg.get_main_option('sqlalchemy.url')))
+    command.upgrade(alembic_cfg, 'head')
+
+
+def ensure_password_hash_column() -> None:
+    inspector = inspect(engine)
+    if 'users' in inspector.get_table_names():
+        columns = [col['name'] for col in inspector.get_columns('users')]
+        if 'password_hash' not in columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(200)"))
+                default_hash = hash_password('password123')
+                conn.execute(text("UPDATE users SET password_hash = :hash"), {'hash': default_hash})
+                conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL"))
+                conn.commit()
+
+
 if __name__ == '__main__':
+    run_migrations()
+    ensure_password_hash_column()
     seed_db()
     app.run(debug=True, host='0.0.0.0', port=PORT)
 
