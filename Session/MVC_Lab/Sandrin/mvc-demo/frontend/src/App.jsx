@@ -18,6 +18,7 @@ export default function App() {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [message, setMessage] = useState(null);
     const [input, setInput] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingTitle, setEditingTitle] = useState('');
@@ -25,7 +26,6 @@ export default function App() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn());
-
     const loadUsers = () => {
         fetchUsers()
             .then((data) => {
@@ -66,8 +66,13 @@ export default function App() {
     useEffect(() => {
         loadUsers();
         if (isAuthenticated) {
-            loadCurrentUser();
-            loadTasks();
+            loadCurrentUser().then((user) => {
+                if (user) {
+                    loadTasks();
+                } else {
+                    setLoading(false);
+                }
+            });
         } else {
             setTasks([]);
             setLoading(false);
@@ -77,6 +82,7 @@ export default function App() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
+        setMessage(null);
         try {
             await login(username, password);
             setIsAuthenticated(true);
@@ -85,6 +91,7 @@ export default function App() {
             await loadCurrentUser();
             loadTasks();
             loadUsers();
+            setMessage('Logged in successfully.');
         } catch (err) {
             setError(err.message);
         }
@@ -93,11 +100,13 @@ export default function App() {
     const handleRegister = async (e) => {
         e.preventDefault();
         setError(null);
+        setMessage(null);
         try {
             await register(username, password);
             setAuthMode('login');
             setUsername('');
             setPassword('');
+            setMessage('Registration successful. Please login.');
         } catch (err) {
             setError(err.message);
         }
@@ -153,8 +162,17 @@ export default function App() {
         try {
             const user = await fetchCurrentUser();
             setCurrentUser(user);
+            return user;
         } catch (err) {
             console.warn('Failed to load current user', err);
+            logout();
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setTasks([]);
+            setUsers(FALLBACK_USERS);
+            setError('Session expired or invalid token. Please login again.');
+            setMessage(null);
+            return null;
         }
     };
 
@@ -195,7 +213,12 @@ export default function App() {
                 >
                     <div>
                         <button
-                            onClick={() => setAuthMode('login')}
+                            type="button"
+                            onClick={() => {
+                                setAuthMode('login');
+                                setError(null);
+                                setMessage(null);
+                            }}
                             style={{
                                 padding: '12px 18px',
                                 borderRadius: '20px',
@@ -208,7 +231,12 @@ export default function App() {
                             Login
                         </button>
                         <button
-                            onClick={() => setAuthMode('register')}
+                            type="button"
+                            onClick={() => {
+                                setAuthMode('register');
+                                setError(null);
+                                setMessage(null);
+                            }}
                             style={{
                                 padding: '12px 18px',
                                 borderRadius: '20px',
@@ -241,54 +269,65 @@ export default function App() {
                         </div>
                     ) : null}
                 </div>
-                {!isAuthenticated ? (
-                    <form
-                        onSubmit={authMode === 'login' ? handleLogin : handleRegister}
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr auto',
-                            gap: '12px',
-                            marginBottom: '24px',
-                        }}
-                    >
-                        <input
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder={authMode === 'login' ? 'Username' : 'Name'}
+                {!currentUser ? (
+                    <>
+                        <form
+                            onSubmit={authMode === 'login' ? handleLogin : handleRegister}
                             style={{
-                                padding: '16px 18px',
-                                borderRadius: '20px',
-                                border: '1px solid #E5E7EB',
-                                width: '100%',
-                            }}
-                        />
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Password"
-                            style={{
-                                padding: '16px 18px',
-                                borderRadius: '20px',
-                                border: '1px solid #E5E7EB',
-                                width: '100%',
-                            }}
-                        />
-                        <button
-                            type="submit"
-                            style={{
-                                padding: '16px 0',
-                                borderRadius: '20px',
-                                border: 'none',
-                                background: '#4338CA',
-                                color: 'white',
-                                fontWeight: 700,
-                                cursor: 'pointer',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr auto',
+                                gap: '12px',
+                                marginBottom: '12px',
                             }}
                         >
-                            {authMode === 'login' ? 'Login' : 'Register'}
-                        </button>
-                    </form>
+                            <input
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder={authMode === 'login' ? 'Username' : 'Name'}
+                                style={{
+                                    padding: '16px 18px',
+                                    borderRadius: '20px',
+                                    border: '1px solid #E5E7EB',
+                                    width: '100%',
+                                }}
+                            />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Password"
+                                style={{
+                                    padding: '16px 18px',
+                                    borderRadius: '20px',
+                                    border: '1px solid #E5E7EB',
+                                    width: '100%',
+                                }}
+                            />
+                            <button
+                                type="submit"
+                                style={{
+                                    padding: '16px 0',
+                                    borderRadius: '20px',
+                                    border: 'none',
+                                    background: '#4338CA',
+                                    color: 'white',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                {authMode === 'login' ? 'Login' : 'Register'}
+                            </button>
+                        </form>
+                        {(error || message) && (
+                            <div style={{ marginBottom: '24px' }}>
+                                {error ? (
+                                    <p style={{ color: '#DC2626', margin: 0 }}>{error}</p>
+                                ) : (
+                                    <p style={{ color: '#059669', margin: 0 }}>{message}</p>
+                                )}
+                            </div>
+                        )}
+                    </>
                 ) : null}
 
                 <form

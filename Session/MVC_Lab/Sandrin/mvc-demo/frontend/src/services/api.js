@@ -10,7 +10,7 @@ function authHeaders() {
 }
 
 export async function fetchTasks() {
-    const res = await fetch(`${BASE}/tasks`, {
+    const res = await fetch(`${BASE}/tasks/tasks`, {
         headers: {
             ...authHeaders(),
         },
@@ -20,7 +20,7 @@ export async function fetchTasks() {
 }
 
 export async function fetchUsers() {
-    const res = await fetch(`${BASE}/users`, {
+    const res = await fetch(`${BASE}/users/`, {
         headers: {
             ...authHeaders(),
         },
@@ -40,7 +40,7 @@ export async function fetchCurrentUser() {
 }
 
 export async function createTask(title) {
-    const res = await fetch(`${BASE}/tasks`, {
+    const res = await fetch(`${BASE}/tasks/tasks`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export async function createTask(title) {
 }
 
 export async function updateTask(taskId, title) {
-    const res = await fetch(`${BASE}/tasks/${taskId}`, {
+    const res = await fetch(`${BASE}/tasks/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export async function updateTask(taskId, title) {
 }
 
 export async function deleteTask(taskId) {
-    const res = await fetch(`${BASE}/tasks/${taskId}`, {
+    const res = await fetch(`${BASE}/tasks/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
             ...authHeaders(),
