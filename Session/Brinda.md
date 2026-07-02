@@ -52,3 +52,27 @@ Frontend React + Backend FastAPI both running via Docker compose. UI renders cor
 
 04/06/26
 Updated the UI styling for a cleaner look and pushed the full MVC repo to GitHub. Frontend and backend both run via Docker, and the interface now renders with Add, Edit, Save, Delete buttons plus checkbox cross-off working end-to-end.
+
+09/06/26
+Stand up the new stack: Error is backend failed to connect to PostgreSQL on startup.sqlalchemy.exc.OperationalError: connection refused in backend logs. I fixed it by Ensuring Postgres container was healthy and DATABASE_URL matched docker-compose.yml config.docker compose up --build runs, /db-ping returns Postgres version.
+
+11/06/26
+Convert to SQLAlchemy: The error was AttributeError or Table 'tasks' doesn't exist when running CRUD operations. sqlalchemy.exc.ProgrammingError: relation "tasks" does not exist after implementing models. I Fixed by creating SQLAlchemy Task model inheriting from Base, ran Base.metadata.create_all(bind=engine) to generate tables.
+
+16/06/26
+User and a one-to-many relationship: The error was Task creation failed with ForeignKeyViolation because owner_id referenced non-existent users. psycopg2.errors.ForeignKeyViolation: Key (owner_id)=(99) is not present in table "users" appeared in docker-compose logs backend. This was fixed by adding User model with relationship to Task, seeded a default user, and validated owner_id exists before inserting tasks.
+
+18/06/26
+Replace create_all with Alembic: Error was Schema changes failed to apply after model updates because Base.metadata.create_all() was removed and migrations were not initialized. alembic.util.exc.CommandError: Can't locate revision identified by 'head' and sqlalchemy.exc.ProgrammingError: column "created_at" does not exist appeared after adding the new field. Initialized Alembic with alembic init, generated migrations via alembic revision --autogenerate -m "initial", and applied schema changes using alembic upgrade head instead of create_all().
+
+23/06/26
+I completed the data migration by manually creating Alembic revision to add a column using the 3-step pattern: add nullable, backfill existing users with, then alter to NOT NULL. The main errors were the migration file being created inside Docker where VSCode couldn't see it, and the hashes initially saving as 61 chars due to a hidden character that we fixed with . The migration now runs successfully with  and all users have valid 60-character bcrypt hashes, completing Exercise 1.
+
+25/06/26
+Built, updated to check token in, added logout. Tested with  / . I had multiple issues after writing code. Frontend ran on port 3000 not 5173. Deleted old code before rewriting new . Used port 3000 and verified login works.
+
+30/06/26
+Protected Routes + Authorization: Unauthenticated requests could access /tasks and any logged-in user could view/delete tasks belonging to other users due to missing JWT enforcement and ownership checks. GET /tasks returned 200 OK without a token, and DELETE /tasks/5 returned 204 No Content for a task where owner_id != current_user.id. I Added get_current_user dependency to all routes to enforce JWT auth, moved ownership logic to TaskService to filter by current_user.id, and raised HTTPException(403) when users accessed tasks they didn’t own.
+
+02/07/26
+Test Infrastructure: Initial test runs failed with ModuleNotFoundError: No module named 'app' and database connection errors because no isolated test environment existed. pytest -v showed FAILED tests/test_smoke.py::test_client_fixture_wires_alice_as_current_user - sqlite3.OperationalError: no such table: users before fixtures were configured. I Added pytest, httpx to requirements.txt, created in-memory SQLite fixtures db_session, alice, and client with dependency overrides for get_db and get_current_user, then verified with a passing smoke test. Testing infrastructure was started in class and a quiz on authentication was given.
