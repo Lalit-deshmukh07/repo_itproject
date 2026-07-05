@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card wide">
+      <h1 class="auth-title">Your Profile</h1>
+      <p id="welcome" class="auth-sub">Welcome back</p>
+
+      <div class="profile-info">
+        <p><strong>Name:</strong> <span id="profile-name"></span></p>
+        <p><strong>Email:</strong> <span id="profile-email"></span></p>
+      </div>
+
+      <div class="profile-actions">
+        <a href="/profile-setup" class="btn-primary">Edit profile / Preferences</a>
+        <button id="logoutBtn" class="btn-secondary">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>

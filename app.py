@@ -54,6 +54,11 @@ def profile_setup():
     return render_template('profile_setup.html')
 
 
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')
+
+
 # ✅ CORRECT LINE
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

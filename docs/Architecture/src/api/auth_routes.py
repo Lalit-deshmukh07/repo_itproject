@@ -44,7 +44,14 @@ def register():
         "password": password
     })
 
-    return jsonify({"message": "Registered successfully"}), 201
+    # Return created user (omit password in response)
+    user = {
+        "firstName": first_name,
+        "lastName": last_name,
+        "email": email
+    }
+
+    return jsonify({"message": "Registered successfully", "user": user}), 201
 
 
 # ---------------------------
@@ -62,7 +69,15 @@ def login():
 
     for user in users:
         if user["email"] == email and user["password"] == password:
-            return jsonify({"message": "Login successful"}), 200
+            # Return basic user info (omit password)
+            return jsonify({
+                "message": "Login successful",
+                "user": {
+                    "firstName": user.get("firstName"),
+                    "lastName": user.get("lastName"),
+                    "email": user.get("email")
+                }
+            }), 200
 
     return jsonify({"message": "Invalid email or password"}), 401
 

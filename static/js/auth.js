@@ -34,7 +34,10 @@ if (loginForm) {
     });
     const result = await res.json();
     if (res.ok) {
-      window.location.href = '/';
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
+      window.location.href = '/profile';
     } else {
       showError(loginError, result.message || 'Login failed');
     }
@@ -91,8 +94,11 @@ if (registerForm) {
     });
     const result = await res.json();
     if (res.ok) {
-      alert('Account created successfully. Please log in.');
-      window.location.href = '/login';
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
+      // New users go to profile setup first
+      window.location.href = '/profile-setup';
     } else {
       showError(registerError, result.message || 'Registration failed');
     }
