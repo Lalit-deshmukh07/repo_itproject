@@ -346,6 +346,87 @@ body{
   line-height:1.6;
 }
 
+/* UPLOAD CATEGORIES */
+.upload-categories{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+  gap:30px;
+  margin-bottom:40px;
+  width:90%;
+  max-width:1200px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.upload-category{
+  background:linear-gradient(135deg, #f9fafb 0%, #fff 100%);
+  padding:30px;
+  border-radius:15px;
+  border:2px dashed #e5e7eb;
+  transition:all 0.3s ease;
+}
+
+.upload-category:hover{
+  border-color:#4f46e5;
+  background:#fafbfc;
+}
+
+.upload-category h3{
+  color:#1f2937;
+  font-size:22px;
+  margin-bottom:8px;
+  font-weight:700;
+}
+
+.upload-category p{
+  color:#9ca3af;
+  font-size:13px;
+  margin-bottom:20px;
+}
+
+.upload-input-wrapper{
+  position:relative;
+  margin-bottom:15px;
+}
+
+.category-upload{
+  display:none;
+}
+
+.upload-label{
+  display:block;
+  padding:15px;
+  background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  transition:all 0.3s ease;
+  text-align:center;
+}
+
+.upload-label:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(79, 70, 229, 0.3);
+}
+
+.file-list{
+  text-align:left;
+  max-height:100px;
+  overflow-y:auto;
+}
+
+.file-item{
+  background:white;
+  padding:8px 12px;
+  margin-bottom:8px;
+  border-radius:8px;
+  font-size:12px;
+  color:#6b7280;
+  border:1px solid #e5e7eb;
+  word-break:break-all;
+}
+
 .upload-box{
   background:linear-gradient(135deg, #f9fafb 0%, #fff 100%);
   padding:50px;
@@ -694,11 +775,15 @@ body{
   display: flex;
   gap: 20px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .recommended-item {
   flex: 1;
+  min-width: 150px;
   text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .item-preview {
@@ -710,15 +795,22 @@ body{
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
+  overflow: hidden;
 }
 
 .recommended-item p {
   font-weight: bold;
   margin-bottom: 6px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .recommended-item span {
   color: gray;
+  display: block;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .outfit-details {

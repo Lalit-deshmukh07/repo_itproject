@@ -151,3 +151,56 @@ if (exclusionInput) {
     }
   });
 }
+
+// Profile setup form
+const profileForm = document.getElementById('profileForm');
+if (profileForm) {
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const gender = document.getElementById('gender').value;
+    const topSize = document.getElementById('topSize').value;
+    const bottomSize = document.getElementById('bottomSize').value;
+    
+    // Get selected styles
+    const styleCheckboxes = document.querySelectorAll('input[name="style"]:checked');
+    const styles = Array.from(styleCheckboxes).map(cb => cb.value);
+    
+    // Get exclusions from tags
+    const exclusionTags = document.querySelectorAll('#exclusion-tags .tag');
+    const exclusions = Array.from(exclusionTags).map(tag => tag.textContent.replace('×', '').trim()).filter(e => e);
+
+    if (!gender || !topSize || !bottomSize || styles.length === 0) {
+      alert('Please fill in all fields and select at least one style preference.');
+      return;
+    }
+
+    const data = {
+      gender,
+      topSize,
+      bottomSize,
+      styles,
+      exclusions
+    };
+
+    try {
+      const res = await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await res.json();
+      
+      if (res.ok) {
+        alert('✓ Profile setup saved successfully!');
+        window.location.href = '/profile';
+      } else {
+        alert('Error: ' + (result.message || 'Failed to save profile'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to save profile. Please try again.');
+    }
+  });
+}

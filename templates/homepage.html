@@ -105,14 +105,58 @@
 </section>
 
 <!-- WARDROBE UPLOAD AND OCCASION SELECTION -->
-<!-- Allows the user to upload clothing images and choose an occasion before generating an outfit. -->
+<!-- Allows the user to upload clothing images by category and choose an occasion before generating an outfit. -->
 <section id="wardrobe" class="upload-section">
-  <h2>Upload Your Wardrobe</h2>
-  <p>Upload clothing images for AI-based outfit recommendations.</p>
+  <h2>Upload Your Wardrobe by Category</h2>
+  <p>Upload clothing images in each category for personalized outfit recommendations.</p>
+
+  <div class="upload-categories">
+    <!-- TOPS UPLOAD -->
+    <div class="upload-category">
+      <h3>👕 Tops</h3>
+      <p>Shirts, jackets, hoodies, blazers</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="topsUpload" multiple accept="image/*" class="category-upload">
+        <label for="topsUpload" class="upload-label">+ Add Tops</label>
+      </div>
+      <div id="topsList" class="file-list"></div>
+    </div>
+
+    <!-- BOTTOMS UPLOAD -->
+    <div class="upload-category">
+      <h3>👖 Bottoms</h3>
+      <p>Pants, jeans, skirts, shorts</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="bottomsUpload" multiple accept="image/*" class="category-upload">
+        <label for="bottomsUpload" class="upload-label">+ Add Bottoms</label>
+      </div>
+      <div id="bottomsList" class="file-list"></div>
+    </div>
+
+    <!-- DRESSES UPLOAD -->
+    <div class="upload-category">
+      <h3>👗 Dresses</h3>
+      <p>Full dresses and jumpsuits</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="dressesUpload" multiple accept="image/*" class="category-upload">
+        <label for="dressesUpload" class="upload-label">+ Add Dresses</label>
+      </div>
+      <div id="dressesList" class="file-list"></div>
+    </div>
+
+    <!-- SHOES UPLOAD -->
+    <div class="upload-category">
+      <h3>👞 Shoes</h3>
+      <p>Sneakers, boots, heels, sandals</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="shoesUpload" multiple accept="image/*" class="category-upload">
+        <label for="shoesUpload" class="upload-label">+ Add Shoes</label>
+      </div>
+      <div id="shoesList" class="file-list"></div>
+    </div>
+  </div>
 
   <div class="upload-box">
-    <input type="file" id="clothingUpload" multiple accept="image/*">
-
     <select id="occasion">
       <option value="">Select occasion</option>
       <option>College</option>

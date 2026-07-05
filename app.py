@@ -9,12 +9,31 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 src_path = os.path.join(BASE_DIR, 'docs/Architecture/src')
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
+DB_PATH = os.path.join(BASE_DIR, 'instance')
 
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
+# Import database
+from database.models import db
+
 # Create Flask app with explicit template and static folders
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+
+# Configure database
+if not os.path.exists(DB_PATH):
+    os.makedirs(DB_PATH)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DB_PATH, "wearitright.db")}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db.init_app(app)
+
+# Configure session
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
+app.config['SESSION_TYPE'] = 'filesystem'
+
 CORS(app)
 
 # Now import auth blueprint after Flask is initialized
@@ -61,4 +80,9 @@ def profile():
 
 # ✅ CORRECT LINE
 if __name__ == '__main__':
+    # Create database tables
+    with app.app_context():
+        db.create_all()
+        print("✓ Database initialized successfully!")
+    
     app.run(debug=True, port=5000)
