@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template
 from flask_cors import CORS
+from flask_session import Session
 import sys
 import os
 
@@ -10,9 +11,16 @@ src_path = os.path.join(BASE_DIR, 'docs/Architecture/src')
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 DB_PATH = os.path.join(BASE_DIR, 'instance')
+SESSION_PATH = os.path.join(DB_PATH, 'sessions')
 
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
+
+# Create directories if they don't exist
+if not os.path.exists(DB_PATH):
+    os.makedirs(DB_PATH)
+if not os.path.exists(SESSION_PATH):
+    os.makedirs(SESSION_PATH)
 
 # Import database
 from database.models import db
@@ -21,18 +29,24 @@ from database.models import db
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 # Configure database
-if not os.path.exists(DB_PATH):
-    os.makedirs(DB_PATH)
-
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DB_PATH, "wearitright.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize database
 db.init_app(app)
 
-# Configure session
+# Configure session for persistent storage
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = SESSION_PATH
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = 7 * 24 * 60 * 60  # 7 days
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# Initialize Flask-Session
+Session(app)
 
 CORS(app)
 

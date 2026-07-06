@@ -10,7 +10,8 @@
 <body>
   <nav class="navbar">
     <h1>WearItRight</h1>
-    <ul>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">&#9776;</button>
+    <ul id="navbarMenu">
       <li><a href="{{ url_for('home') }}">Home</a></li>
       <li><a href="#wardrobe">Wardrobe</a></li>
       <li><a href="#outfits">Recommendations</a></li>
@@ -29,8 +30,8 @@
       </p>
 
       <div class="hero-actions">
-        <a class="btn-primary" href="#outfits">Explore Outfits</a>
-        <a class="btn-secondary" href="{{ url_for('register') }}">Create Account</a>
+        <a class="btn-primary" href="#wardrobe">Upload &amp; Generate</a>
+        <a class="btn-secondary" id="heroSecondaryBtn" href="{{ url_for('register') }}">Create Account</a>
       </div>
     </div>
 
@@ -170,57 +171,22 @@
 </section>
 
 <!-- AI RECOMMENDED OUTFIT DISPLAY -->
-<!-- Displays the clothing combination suggested from the uploaded wardrobe, occasion, and weather. --> 
+<!-- Displays multiple outfit combinations the user can choose from. -->
 
 <section id="recommendations" class="recommended-outfit" hidden>
   <div class="recommendation-header">
     <div>
-      <p class="section-label">AI Styling Result</p>
-      <h2>Your Recommended Outfit</h2>
+      <p class="section-label">AI Styling Results</p>
+      <h2>Choose Your Outfit — <span id="selectedOccasion">College</span></h2>
     </div>
-    <span class="match-score">92% Match</span>
+    <span class="match-score" id="weatherBadge">Cloudy, 18°C</span>
   </div>
 
-  <div class="outfit-result-card">
-    <div class="recommended-items">
-      <div class="recommended-item">
-  <div class="item-preview">
-    <img id="topImage" src="" alt="Uploaded top">
-  </div>
-  <p>Selected Top</p>
-  <span>Top</span>
-</div>
+  <!-- 3 outfit option cards generated dynamically -->
+  <div id="outfitOptionsGrid" class="outfit-options-grid"></div>
 
-<div class="recommended-item">
-  <div class="item-preview">
-    <img id="bottomImage" src="" alt="Uploaded bottom">
-  </div>
-  <p>Selected Bottom</p>
-  <span>Bottom</span>
-</div>
-
-<div class="recommended-item">
-  <div class="item-preview">
-    <img id="shoesImage" src="" alt="Uploaded shoes">
-  </div>
-  <p>Selected Shoes</p>
-  <span>Shoes</span>
-</div>
-    </div>
-
-    <div class="outfit-details">
-      <p><strong>Occasion:</strong> <span id="selectedOccasion">College</span></p>
-      <p><strong>Weather:</strong> Cloudy, 18&deg;C</p>
-      <p class="ai-note">
-        <strong>AI Note:</strong> A comfortable casual combination with
-        light layers suitable for cloudy weather.
-      </p>
-
-      <div class="result-buttons">
-        <button>Save Outfit</button>
-        <button class="secondary-btn">Generate Another</button>
-      </div>
-    </div>
+  <div class="generate-more-bar">
+    <button id="generateMoreBtn" class="generate-more-btn">🔄 Generate More Options</button>
   </div>
 </section>
 
@@ -228,21 +194,10 @@
 
 <section class="weather-section">
 
-  <h2>Today's Weather Recommendation</h2>
+  <h2>Today's Weather</h2>
 
-  <div class="weather-card">
-
-    <h3>Berlin, Germany</h3>
-
-    <p class="temp">18°C • Cloudy</p>
-
-    <p class="recommendation">
-      Recommended Outfit:
-      Hoodie, Jeans, Sneakers & Light Jacket
-    </p>
-
-    <button>View More Suggestions</button>
-
+  <div class="weather-card" id="weatherCard">
+    <div class="weather-loading">📍 Detecting your location&hellip;</div>
   </div>
 
 </section>
@@ -262,7 +217,7 @@
 </footer>
 
 
-<section class="signin-section">
+<section class="signin-section" id="signinSection">
   <div class="signin-card">
     <div class="signin-copy">
       <h2>Ready to build your wardrobe?</h2>
@@ -274,6 +229,60 @@
     </div>
   </div>
 </section>
+
+<script>
+// Hamburger menu toggle
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('navbarMenu').classList.toggle('open');
+});
+
+// Close menu when a nav link is clicked (mobile)
+document.querySelectorAll('#navbarMenu a, #navbarMenu button').forEach(el => {
+  el.addEventListener('click', () => document.getElementById('navbarMenu').classList.remove('open'));
+});
+
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST' })
+    .then(() => { window.location.href = '/login'; })
+    .catch(err => console.error('Logout error:', err));
+}
+
+// Update page based on authentication status
+async function updateAuthUI() {
+  try {
+    const response = await fetch('/api/auth/status');
+    const data = await response.json();
+    const navMenu = document.getElementById('navbarMenu');
+
+    if (data.authenticated && data.user) {
+      // Logged in — update navbar
+      navMenu.innerHTML = `
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+        <li><a href="#wardrobe">Upload</a></li>
+        <li><a href="#outfits">Trending</a></li>
+        <li class="nav-user">👤 ${data.user.name}</li>
+        <li><button onclick="logout()" class="nav-logout-btn">Logout</button></li>
+      `;
+
+      // Hide sign-in section
+      const signinSection = document.getElementById('signinSection');
+      if (signinSection) signinSection.style.display = 'none';
+
+      // Update hero secondary button
+      const heroBtn = document.getElementById('heroSecondaryBtn');
+      if (heroBtn) {
+        heroBtn.textContent = '👤 My Profile';
+        heroBtn.href = '{{ url_for("profile") }}';
+      }
+    }
+  } catch (error) {
+    console.log('Could not update auth UI:', error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+</script>
 
 <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
 </body>
