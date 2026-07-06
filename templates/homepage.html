@@ -3,257 +3,278 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WearItRight is an AI-powered wardrobe and outfit recommendation prototype.">
-  <title>WearItRight | Smart Outfit Recommendations</title>
-  <link rel="stylesheet" href="../static/css/homepage.css">
+  <title>WearItRight</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
 </head>
 <body>
-  <header class="site-header">
-    <nav class="navbar" aria-label="Main navigation">
-      <a class="brand" href="#home">WearItRight</a>
+  <nav class="navbar">
+    <h1>WearItRight</h1>
+    <ul>
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="#wardrobe">Wardrobe</a></li>
+      <li><a href="#outfits">Recommendations</a></li>
+      <li><a class="login-btn" href="{{ url_for('login') }}">Login</a></li>
+      <li><a class="register-btn" href="{{ url_for('register') }}">Register</a></li>
+    </ul>
+  </nav>
 
-      <ul class="nav-links">
-        <li><a href="#home">Home</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#wardrobe">Wardrobe</a></li>
-        <li><a href="#recommendations">Recommendations</a></li>
-      </ul>
+  <section class="hero">
 
-      <button class="login-btn" id="openLoginBtn" type="button">Login</button>
-    </nav>
-  </header>
+    <div class="hero-text">
+      <h2>Smart Outfit Suggestions Based on Weather & Occasion</h2>
 
-  <main>
-    <section class="hero" id="home">
-      <div class="hero-text">
-        <p class="eyebrow">AI-powered fashion styling</p>
-        <h1>Smart outfit suggestions based on weather and occasion.</h1>
-        <p>
-          Upload your wardrobe, choose where you are going, and preview a personalized
-          outfit combination in seconds.
-        </p>
+      <p>
+        Upload your wardrobe and get AI-powered outfit recommendations instantly.
+      </p>
 
-        <div class="hero-actions">
-          <a class="primary-btn" href="#wardrobe">Create Outfit</a>
-          <a class="secondary-link" href="#recommendations">View Demo Result</a>
-        </div>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#outfits">Explore Outfits</a>
+        <a class="btn-secondary" href="{{ url_for('register') }}">Create Account</a>
       </div>
+    </div>
 
-      <div class="hero-image" aria-label="Fashion styling preview">
-        <img src="../static/images/stylish-young-man-poses-confidently-600nw-2597050177.jpg" alt="Stylish outfit inspiration">
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop">
+    </div>
+
+  </section>
+<section class="features">
+
+  <h2>Why Choose WearItRight?</h2>
+
+  <div class="feature-container">
+
+    <div class="feature-card">
+      <h3>AI Recommendations</h3>
+      <p>Get outfit suggestions based on weather and occasion.</p>
+    </div>
+
+    <div class="feature-card">
+      <h3>Virtual Wardrobe</h3>
+      <p>Upload and manage your clothes digitally.</p>
+    </div>
+
+    <div class="feature-card">
+      <h3>Weather Smart</h3>
+      <p>Smart outfit planning for rain, winter, and summer.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="outfits" class="outfits">
+
+  <h2>Trending Outfit Suggestions</h2>
+
+  <div class="outfit-container">
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/stylish-young-man-poses-confidently-600nw-2597050177.jpg') }}" alt="College Casual">
+
+      <h3>College Casual</h3>
+
+      <p>White Hoodie • Jeans • Sneakers</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/aline-kaplan-zara-blazer-trousers-mango-waistcoat-lobus-bag-news-photo-1692315065.avif') }}" alt="Office Ready">
+
+      <h3>Office Ready</h3>
+
+      <p>Blazer • Formal Pants • Loafers</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/1_5qjaFhlD5AX6--c7CMggVA.jpg') }}" alt="Winter Street Style">
+
+      <h3>Winter Street Style</h3>
+
+      <p>Puffer Jacket • Boots • Beanie</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- WARDROBE UPLOAD AND OCCASION SELECTION -->
+<!-- Allows the user to upload clothing images by category and choose an occasion before generating an outfit. -->
+<section id="wardrobe" class="upload-section">
+  <h2>Upload Your Wardrobe by Category</h2>
+  <p>Upload clothing images in each category for personalized outfit recommendations.</p>
+
+  <div class="upload-categories">
+    <!-- TOPS UPLOAD -->
+    <div class="upload-category">
+      <h3>👕 Tops</h3>
+      <p>Shirts, jackets, hoodies, blazers</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="topsUpload" multiple accept="image/*" class="category-upload">
+        <label for="topsUpload" class="upload-label">+ Add Tops</label>
       </div>
-    </section>
+      <div id="topsList" class="file-list"></div>
+    </div>
 
-    <section class="features" id="features">
-      <p class="section-label">Core Features</p>
-      <h2>Why choose WearItRight?</h2>
-
-      <div class="feature-container">
-        <article class="feature-card">
-          <span class="feature-icon">AI</span>
-          <h3>AI Recommendations</h3>
-          <p>Get outfit suggestions based on your wardrobe, weather, and occasion.</p>
-        </article>
-
-        <article class="feature-card">
-          <span class="feature-icon">WD</span>
-          <h3>Virtual Wardrobe</h3>
-          <p>Upload and organize clothing items digitally for easier planning.</p>
-        </article>
-
-        <article class="feature-card">
-          <span class="feature-icon">WX</span>
-          <h3>Weather Smart</h3>
-          <p>Plan outfits for cloudy, rainy, warm, or winter conditions.</p>
-        </article>
+    <!-- BOTTOMS UPLOAD -->
+    <div class="upload-category">
+      <h3>👖 Bottoms</h3>
+      <p>Pants, jeans, skirts, shorts</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="bottomsUpload" multiple accept="image/*" class="category-upload">
+        <label for="bottomsUpload" class="upload-label">+ Add Bottoms</label>
       </div>
-    </section>
+      <div id="bottomsList" class="file-list"></div>
+    </div>
 
-    <section class="outfits" id="trending">
-      <p class="section-label">Style Inspiration</p>
-      <h2>Trending outfit suggestions</h2>
-
-      <div class="outfit-container">
-        <article class="outfit-card">
-          <img src="../static/images/stylish-young-man-poses-confidently-600nw-2597050177.jpg" alt="College casual outfit">
-          <div class="outfit-card-content">
-            <h3>College Casual</h3>
-            <p>White hoodie &bull; Jeans &bull; Sneakers</p>
-            <button type="button">Try Outfit</button>
-          </div>
-        </article>
-
-        <article class="outfit-card">
-          <img src="../static/images/aline-kaplan-zara-blazer-trousers-mango-waistcoat-lobus-bag-news-photo-1692315065.avif" alt="Office ready outfit">
-          <div class="outfit-card-content">
-            <h3>Office Ready</h3>
-            <p>Blazer &bull; Formal pants &bull; Loafers</p>
-            <button type="button">Try Outfit</button>
-          </div>
-        </article>
-
-        <article class="outfit-card">
-          <img src="../static/images/1_5qjaFhlD5AX6--c7CMggVA.jpg" alt="Winter street style outfit">
-          <div class="outfit-card-content">
-            <h3>Winter Street Style</h3>
-            <p>Puffer jacket &bull; Boots &bull; Beanie</p>
-            <button type="button">Try Outfit</button>
-          </div>
-        </article>
+    <!-- DRESSES UPLOAD -->
+    <div class="upload-category">
+      <h3>👗 Dresses</h3>
+      <p>Full dresses and jumpsuits</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="dressesUpload" multiple accept="image/*" class="category-upload">
+        <label for="dressesUpload" class="upload-label">+ Add Dresses</label>
       </div>
-    </section>
+      <div id="dressesList" class="file-list"></div>
+    </div>
 
-    <!-- WARDROBE UPLOAD AND OCCASION SELECTION -->
-    <!-- Allows the user to upload clothing images and choose an occasion before generating an outfit. -->
-    <section class="upload-section" id="wardrobe">
-      <div class="section-heading">
-        <p class="section-label">Virtual Wardrobe</p>
-        <h2>Upload your wardrobe</h2>
-        <p>Upload multiple clothing photos, mark their category, then generate a demo outfit for your plan.</p>
+    <!-- SHOES UPLOAD -->
+    <div class="upload-category">
+      <h3>👞 Shoes</h3>
+      <p>Sneakers, boots, heels, sandals</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="shoesUpload" multiple accept="image/*" class="category-upload">
+        <label for="shoesUpload" class="upload-label">+ Add Shoes</label>
       </div>
-
-      <div class="upload-box">
-        <label class="upload-label" for="clothingUpload">Choose wardrobe images</label>
-        <input type="file" id="clothingUpload" multiple accept="image/*">
-
-        <label class="upload-label" for="cameraUpload">Take photo on mobile</label>
-        <input type="file" id="cameraUpload" accept="image/*" capture="environment">
-
-        <label class="select-label" for="occasion">Occasion</label>
-        <select id="occasion">
-          <option value="">Select occasion</option>
-          <option>College</option>
-          <option>Office</option>
-          <option>Party</option>
-          <option>Casual Day Out</option>
-          <option>Gym</option>
-          <option>Formal Event</option>
-        </select>
-
-        <label class="select-label" for="weather">Weather</label>
-        <select id="weather">
-          <option value="">Select weather</option>
-          <option>Sunny</option>
-          <option>Cloudy</option>
-          <option>Rainy</option>
-          <option>Cold</option>
-          <option>Hot</option>
-        </select>
-
-        <label class="select-label" for="stylePreference">Style preference</label>
-        <select id="stylePreference">
-          <option value="">Select style</option>
-          <option>Casual</option>
-          <option>Formal</option>
-          <option>Streetwear</option>
-          <option>Sporty</option>
-          <option>Minimal</option>
-          <option>No Preference</option>
-        </select>
-
-        <button id="generateBtn" type="button">Generate Outfit</button>
-        <p class="upload-hint">Add at least one top, bottom, and shoes item. You can correct categories before generating.</p>
-      </div>
-
-      <div class="wardrobe-panel" id="wardrobePanel" hidden>
-        <div class="wardrobe-header">
-          <div>
-            <p class="section-label">Uploaded Items</p>
-            <h3>Your wardrobe</h3>
-          </div>
-          <span id="wardrobeCount">0 items</span>
-        </div>
-        <div class="wardrobe-grid" id="wardrobeGrid"></div>
-      </div>
-    </section>
-
-    <!-- AI RECOMMENDED OUTFIT DISPLAY -->
-    <!-- Displays the clothing combination suggested from the uploaded wardrobe, occasion, and weather. -->
-    <section class="recommended-outfit" id="recommendations" hidden>
-      <div class="recommendation-header">
-        <div>
-          <p class="section-label">AI Styling Result</p>
-          <h2>Your recommended outfit</h2>
-        </div>
-        <span class="match-score">92% Match</span>
-      </div>
-
-      <div class="outfit-result-card">
-        <div class="recommended-items">
-          <article class="recommended-item">
-            <div class="item-preview">
-              <img id="topImage" src="" alt="Uploaded top">
-            </div>
-            <p>Selected Top</p>
-            <span>Top</span>
-          </article>
-
-          <article class="recommended-item">
-            <div class="item-preview">
-              <img id="bottomImage" src="" alt="Uploaded bottom">
-            </div>
-            <p>Selected Bottom</p>
-            <span>Bottom</span>
-          </article>
-
-          <article class="recommended-item">
-            <div class="item-preview">
-              <img id="shoesImage" src="" alt="Uploaded shoes">
-            </div>
-            <p>Selected Shoes</p>
-            <span>Shoes</span>
-          </article>
-        </div>
-
-        <div class="outfit-details">
-          <p><strong>Occasion:</strong> <span id="selectedOccasion">College</span></p>
-          <p><strong>Weather:</strong> <span id="selectedWeather">Cloudy</span></p>
-          <p><strong>Style:</strong> <span id="selectedStyle">Casual</span></p>
-          <p class="ai-note">
-            <strong>AI Note:</strong> <span id="aiNote">This demo chooses items from your wardrobe categories. In the final system, AI will classify images automatically.</span>
-          </p>
-
-          <div class="result-buttons">
-            <button type="button" id="saveOutfitBtn">Save Outfit</button>
-            <button class="secondary-btn" type="button" id="generateAnotherBtn">Generate Another</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="weather-section" id="weather">
-      <p class="section-label">Weather Styling</p>
-      <h2>Today's weather recommendation</h2>
-
-      <div class="weather-card">
-        <h3>Berlin, Germany</h3>
-        <p class="temp">18&deg;C &bull; Cloudy</p>
-        <p class="recommendation">
-          Recommended outfit: hoodie, jeans, sneakers, and a light jacket.
-        </p>
-        <button type="button">View More Suggestions</button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <h2>WearItRight</h2>
-    <p>AI-powered smart wardrobe and outfit recommendation platform.</p>
-    <p class="copyright">&copy; 2026 WearItRight. All rights reserved.</p>
-  </footer>
-
-  <div class="login-modal" id="loginModal" hidden>
-    <div class="modal-backdrop" id="closeLoginBackdrop"></div>
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <button class="modal-close" id="closeLoginBtn" type="button" aria-label="Close login form">&times;</button>
-      <h2 id="loginTitle">Login</h2>
-      <input type="email" placeholder="Enter email" aria-label="Email address">
-      <input type="password" placeholder="Enter password" aria-label="Password">
-      <button type="button">Sign In</button>
-      <p class="modal-note">Demo only: authentication will connect to the backend later.</p>
+      <div id="shoesList" class="file-list"></div>
     </div>
   </div>
 
-  <script src="../static/js/homepage.js"></script>
+  <div class="upload-box">
+    <select id="occasion">
+      <option value="">Select occasion</option>
+      <option>College</option>
+      <option>Office</option>
+      <option>Party</option>
+      <option>Casual Day Out</option>
+    </select>
+
+    <button id="generateBtn">Generate Outfit</button>
+  </div>
+</section>
+
+<!-- AI RECOMMENDED OUTFIT DISPLAY -->
+<!-- Displays the clothing combination suggested from the uploaded wardrobe, occasion, and weather. --> 
+
+<section id="recommendations" class="recommended-outfit" hidden>
+  <div class="recommendation-header">
+    <div>
+      <p class="section-label">AI Styling Result</p>
+      <h2>Your Recommended Outfit</h2>
+    </div>
+    <span class="match-score">92% Match</span>
+  </div>
+
+  <div class="outfit-result-card">
+    <div class="recommended-items">
+      <div class="recommended-item">
+  <div class="item-preview">
+    <img id="topImage" src="" alt="Uploaded top">
+  </div>
+  <p>Selected Top</p>
+  <span>Top</span>
+</div>
+
+<div class="recommended-item">
+  <div class="item-preview">
+    <img id="bottomImage" src="" alt="Uploaded bottom">
+  </div>
+  <p>Selected Bottom</p>
+  <span>Bottom</span>
+</div>
+
+<div class="recommended-item">
+  <div class="item-preview">
+    <img id="shoesImage" src="" alt="Uploaded shoes">
+  </div>
+  <p>Selected Shoes</p>
+  <span>Shoes</span>
+</div>
+    </div>
+
+    <div class="outfit-details">
+      <p><strong>Occasion:</strong> <span id="selectedOccasion">College</span></p>
+      <p><strong>Weather:</strong> Cloudy, 18&deg;C</p>
+      <p class="ai-note">
+        <strong>AI Note:</strong> A comfortable casual combination with
+        light layers suitable for cloudy weather.
+      </p>
+
+      <div class="result-buttons">
+        <button>Save Outfit</button>
+        <button class="secondary-btn">Generate Another</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="weather-section">
+
+  <h2>Today's Weather Recommendation</h2>
+
+  <div class="weather-card">
+
+    <h3>Berlin, Germany</h3>
+
+    <p class="temp">18°C • Cloudy</p>
+
+    <p class="recommendation">
+      Recommended Outfit:
+      Hoodie, Jeans, Sneakers & Light Jacket
+    </p>
+
+    <button>View More Suggestions</button>
+
+  </div>
+
+</section>
+
+<footer class="footer">
+
+  <h2>WearItRight</h2>
+
+  <p>
+    AI-powered smart wardrobe and outfit recommendation platform.
+  </p>
+
+  <p class="copyright">
+    © 2026 WearItRight. All rights reserved.
+  </p>
+
+</footer>
+
+
+<section class="signin-section">
+  <div class="signin-card">
+    <div class="signin-copy">
+      <h2>Ready to build your wardrobe?</h2>
+      <p>Sign in or register to save your outfits, upload clothes, and get smart recommendations.</p>
+    </div>
+    <div class="signin-actions">
+      <a class="btn-primary" href="{{ url_for('login') }}">Sign In</a>
+      <a class="btn-secondary" href="{{ url_for('register') }}">Create account</a>
+    </div>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
 </body>
 </html>
