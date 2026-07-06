@@ -50,6 +50,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
+        # Automatically log in the user after registration
+        session['user_id'] = new_user.id
+        session['user_email'] = new_user.email
+        session['user_name'] = f"{new_user.first_name} {new_user.last_name}"
+        
         return jsonify({
             "message": "Registered successfully",
             "user": new_user.to_dict()
