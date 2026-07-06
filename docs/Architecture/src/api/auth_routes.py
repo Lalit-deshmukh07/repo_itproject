@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from database.models import db, User, Outfit
-from datetime import datetime
+from datetime import datetime, timedelta
 
 auth = Blueprint('auth', __name__)
 
@@ -51,6 +51,7 @@ def register():
         db.session.commit()
         
         # Automatically log in the user after registration
+        session.permanent = True
         session['user_id'] = new_user.id
         session['user_email'] = new_user.email
         session['user_name'] = f"{new_user.first_name} {new_user.last_name}"
@@ -81,7 +82,8 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user and user.check_password(password):
-        # Set session
+        # Set session as permanent for 7 days
+        session.permanent = True
         session['user_id'] = user.id
         session['user_email'] = user.email
         session['user_name'] = f"{user.first_name} {user.last_name}"
@@ -303,29 +305,53 @@ def get_recommendations():
         
         style_recommendations = {
             'casual': [
-                {'title': 'Casual Comfort', 'description': 'Relaxed fit jeans, soft t-shirt, sneakers', 'styles': ['casual']},
-                {'title': 'Weekend Vibes', 'description': 'Hoodie, chinos, casual shoes', 'styles': ['casual']}
+                {'title': 'Casual Comfort', 'description': 'Relaxed fit jeans, soft t-shirt, white sneakers', 'styles': ['casual'], 'image': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop'},
+                {'title': 'Weekend Vibes', 'description': 'Hoodie, chinos, canvas sneakers', 'styles': ['casual'], 'image': 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop'},
             ],
             'formal': [
-                {'title': 'Business Elegant', 'description': 'Blazer, dress pants, oxford shoes', 'styles': ['formal']},
-                {'title': 'Professional', 'description': 'Crisp button-up, tailored trousers, leather shoes', 'styles': ['formal']}
+                {'title': 'Business Elegant', 'description': 'Blazer, dress pants, oxford shoes', 'styles': ['formal'], 'image': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop'},
+                {'title': 'Power Suit', 'description': 'Crisp button-up, tailored trousers, leather shoes', 'styles': ['formal'], 'image': 'https://images.unsplash.com/photo-1594938298603-c8148c4b4ae2?w=600&auto=format&fit=crop'},
             ],
             'sporty': [
-                {'title': 'Athletic Look', 'description': 'Sports jacket, leggings, running shoes', 'styles': ['sporty']},
-                {'title': 'Active Wear', 'description': 'Track pants, performance shirt, trainers', 'styles': ['sporty']}
+                {'title': 'Athletic Look', 'description': 'Sports jacket, leggings, running shoes', 'styles': ['sporty'], 'image': 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&auto=format&fit=crop'},
+                {'title': 'Active Wear', 'description': 'Track pants, performance shirt, trainers', 'styles': ['sporty'], 'image': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&auto=format&fit=crop'},
             ],
             'vintage': [
-                {'title': 'Retro Chic', 'description': 'Vintage blouse, high-waisted jeans, classic shoes', 'styles': ['vintage']},
-                {'title': 'Nostalgic Style', 'description': 'Vintage dress, cardigan, loafers', 'styles': ['vintage']}
+                {'title': 'Retro Chic', 'description': 'Vintage blouse, high-waisted jeans, classic pumps', 'styles': ['vintage'], 'image': 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop'},
+                {'title': 'Nostalgic Style', 'description': 'Vintage floral dress, cardigan, loafers', 'styles': ['vintage'], 'image': 'https://images.unsplash.com/photo-1551803091-e20673f15770?w=600&auto=format&fit=crop'},
             ],
             'streetwear': [
-                {'title': 'Urban Edge', 'description': 'Oversized hoodie, cargo pants, sneakers', 'styles': ['streetwear']},
-                {'title': 'Street Style', 'description': 'Graphic tee, distressed jeans, high-tops', 'styles': ['streetwear']}
+                {'title': 'Urban Edge', 'description': 'Oversized hoodie, cargo pants, chunky sneakers', 'styles': ['streetwear'], 'image': 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=600&auto=format&fit=crop'},
+                {'title': 'Street Style', 'description': 'Graphic tee, distressed jeans, high-tops', 'styles': ['streetwear'], 'image': 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop'},
             ],
             'minimalist': [
-                {'title': 'Simple Elegance', 'description': 'Plain white tee, black jeans, white sneakers', 'styles': ['minimalist']},
-                {'title': 'Understated', 'description': 'Neutral sweater, tailored pants, minimal accessories', 'styles': ['minimalist']}
-            ]
+                {'title': 'Simple Elegance', 'description': 'Plain white tee, black jeans, white leather sneakers', 'styles': ['minimalist'], 'image': 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=600&auto=format&fit=crop'},
+                {'title': 'Understated', 'description': 'Neutral sweater, tailored pants, mules', 'styles': ['minimalist'], 'image': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&auto=format&fit=crop'},
+            ],
+            'bohemian': [
+                {'title': 'Boho Dream', 'description': 'Flowy maxi dress, fringe bag, strappy sandals', 'styles': ['bohemian'], 'image': 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop'},
+                {'title': 'Free Spirit', 'description': 'Peasant blouse, wide-leg pants, wedge sandals', 'styles': ['bohemian'], 'image': 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop'},
+            ],
+            'preppy': [
+                {'title': 'Classic Prep', 'description': 'Polo shirt, chinos, boat shoes', 'styles': ['preppy'], 'image': 'https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=600&auto=format&fit=crop'},
+                {'title': 'Campus Chic', 'description': 'Argyle sweater, plaid skirt, loafers', 'styles': ['preppy'], 'image': 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop'},
+            ],
+            'edgy': [
+                {'title': 'Dark Edge', 'description': 'Leather jacket, ripped jeans, combat boots', 'styles': ['edgy'], 'image': 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop'},
+                {'title': 'Rock Rebel', 'description': 'Band tee, black skinny jeans, Chelsea boots', 'styles': ['edgy'], 'image': 'https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?w=600&auto=format&fit=crop'},
+            ],
+            'romantic': [
+                {'title': 'Soft Romance', 'description': 'Floral midi dress, cardigan, ballet flats', 'styles': ['romantic'], 'image': 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&auto=format&fit=crop'},
+                {'title': 'Dreamy Look', 'description': 'Lace blouse, pleated skirt, kitten heels', 'styles': ['romantic'], 'image': 'https://images.unsplash.com/photo-1519657337289-077653f724ed?w=600&auto=format&fit=crop'},
+            ],
+            'classic': [
+                {'title': 'Timeless Classic', 'description': 'White button-down, straight trousers, ballet flats', 'styles': ['classic'], 'image': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'},
+                {'title': 'Parisian Style', 'description': 'Striped tee, wide-leg trousers, loafers', 'styles': ['classic'], 'image': 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop'},
+            ],
+            'experimental': [
+                {'title': 'Bold Statement', 'description': 'Mixed prints, layered accessories, statement shoes', 'styles': ['experimental'], 'image': 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop'},
+                {'title': 'Fashion Forward', 'description': 'Avant-garde silhouette, unexpected textures, bold colours', 'styles': ['experimental'], 'image': 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop'},
+            ],
         }
         
         for style in styles:
@@ -338,3 +364,60 @@ def get_recommendations():
         }), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch recommendations: {str(e)}"}), 500
+
+
+# ---------------------------
+# WEATHER-BASED OUTFIT SUGGESTIONS
+# ---------------------------
+@auth.route('/api/outfit/weather-suggestions', methods=['GET'])
+def weather_suggestions():
+    """Return outfit type suggestions based on weather + occasion + user style"""
+    occasion = request.args.get('occasion', 'Casual Day Out')
+    condition = request.args.get('condition', 'Clear')
+    temp = int(request.args.get('temp', 18))
+
+    is_cold = temp <= 10
+    is_hot = temp >= 25
+    is_rainy = any(w in condition.lower() for w in ['rain', 'drizzle', 'shower'])
+    is_snowy = 'snow' in condition.lower()
+
+    weather_tag = 'cold' if is_snowy or is_cold else ('rainy' if is_rainy else ('hot' if is_hot else 'warm'))
+
+    suggestions_map = {
+        'College': {
+            'hot': ['Light t-shirt + denim shorts', 'Crop top + wide-leg trousers', 'Polo + chino shorts'],
+            'warm': ['Hoodie + jeans + sneakers', 'Oversized tee + cargos', 'Sweatshirt + joggers'],
+            'cold': ['Puffer jacket + thermal jeans + boots', 'Knit sweater + cords + loafers'],
+            'rainy': ['Waterproof jacket + dark jeans + ankle boots', 'Raincoat + joggers + trainers'],
+        },
+        'Office': {
+            'hot': ['Linen shirt + chinos + loafers', 'Breathable dress + sandals'],
+            'warm': ['Blazer + trousers + oxfords', 'Midi dress + heels', 'Shirt + suit pants'],
+            'cold': ['Wool suit + overcoat', 'Turtleneck + tailored trousers + boots'],
+            'rainy': ['Trench coat + dark suit + waterproof shoes'],
+        },
+        'Party': {
+            'hot': ['Flowy sundress + sandals', 'Linen suit + loafers'],
+            'warm': ['Cocktail dress + heels', 'Blazer + slim trousers + Chelsea boots'],
+            'cold': ['Party dress + faux fur coat + boots', 'Velvet suit + dress shoes'],
+            'rainy': ['Sequin dress + ankle boots', 'Chic raincoat + midi dress'],
+        },
+        'Casual Day Out': {
+            'hot': ['Tank top + shorts + sandals', 'Sundress + flip-flops'],
+            'warm': ['Light sweater + casual jeans + sneakers', 'Shirt dress + white sneakers'],
+            'cold': ['Parka + warm layers + snow boots', 'Puffer jacket + joggers + trainers'],
+            'rainy': ['Rain jacket + waterproof pants + boots', 'Anorak + jeans + wellies'],
+        }
+    }
+
+    occ_map = suggestions_map.get(occasion, suggestions_map['Casual Day Out'])
+    suggestions = occ_map.get(weather_tag, occ_map.get('warm', []))
+
+    return jsonify({
+        'occasion': occasion,
+        'weatherTag': weather_tag,
+        'condition': condition,
+        'temp': temp,
+        'suggestions': suggestions
+    }), 200
+
