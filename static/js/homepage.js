@@ -12,7 +12,8 @@ let categoryFiles = {
   tops: [],
   bottoms: [],
   dresses: [],
-  shoes: []
+  shoes: [],
+  outerwear: []
 };
 
 // The outfit the user chose to save
@@ -188,6 +189,7 @@ if (occasion) {
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   checkAuthStatus();
+  restoreFromStorage();      // ← load saved photos on page load
   setupCategoryUploads();
   setupGenerateMoreBtn();
   loadWeather();
@@ -209,7 +211,7 @@ async function checkAuthStatus() {
 
 // Setup category upload handlers
 function setupCategoryUploads() {
-  const categories = ['tops', 'bottoms', 'dresses', 'shoes'];
+  const categories = ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'];
   
   categories.forEach(category => {
     const uploadInput = document.getElementById(`${category}Upload`);
@@ -223,15 +225,55 @@ function setupCategoryUploads() {
 
 // Handle file uploads for each category — ADDITIVE (appends to existing)
 function handleCategoryUpload(category, files) {
-  // Append new files to existing ones (don't replace)
-  const newEntries = Array.from(files).map(file => ({
-    url: URL.createObjectURL(file),
-    name: file.name
-  }));
-  categoryFiles[category] = [...categoryFiles[category], ...newEntries];
-  renderThumbnails(category);
-  // Reset the input so the same file can be added again if needed
-  document.getElementById(`${category}Upload`).value = '';
+  if (!files || files.length === 0) return;
+  
+  let processed = 0;
+  const fileCount = files.length;
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        resizeImage(e.target.result, 400, (dataUrl) => {
+          try {
+            categoryFiles[category].push({ url: dataUrl, name: file.name });
+            processed++;
+            
+            // Render and save immediately after each file
+            renderThumbnails(category);
+            saveToStorage();
+          } catch (err) {
+            console.error('Error processing image:', err);
+          }
+        });
+      } catch (err) {
+        console.error('Error in FileReader callback:', err);
+      }
+    };
+    reader.onerror = function() {
+      console.error(`Failed to read file: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Clear the file input
+  const uploadInput = document.getElementById(`${category}Upload`);
+  if (uploadInput) uploadInput.value = '';
+}
+
+// Resize an image dataUrl to max px on longest side
+function resizeImage(dataUrl, maxPx, callback) {
+  const img = new Image();
+  img.onload = function() {
+    const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+    const w = Math.round(img.width * ratio);
+    const h = Math.round(img.height * ratio);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.75));
+  };
+  img.src = dataUrl;
 }
 
 // Render thumbnails grid for a category
@@ -264,29 +306,59 @@ function renderThumbnails(category) {
 
 // Remove a single uploaded item
 function removeUploadedItem(category, index) {
-  URL.revokeObjectURL(categoryFiles[category][index].url);
   categoryFiles[category].splice(index, 1);
   renderThumbnails(category);
+  saveToStorage();            // ← update storage after removal
+}
+
+// ─── LOCALSTORAGE PERSISTENCE ────────────────────────────
+const STORAGE_KEY = 'wearitright_wardrobe_v3';
+
+function saveToStorage() {
+  try {
+    const data = {};
+    ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
+      data[cat] = categoryFiles[cat].map(f => ({ url: f.url, name: f.name }));
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Storage full — not all images saved:', e);
+  }
+}
+
+function restoreFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
+      if (data[cat] && data[cat].length > 0) {
+        categoryFiles[cat] = data[cat];
+        renderThumbnails(cat);
+      }
+    });
+  } catch (e) {
+    console.warn('Could not restore from storage:', e);
+  }
 }
 
 // Validate that we have required categories
+// Dresses don't need a separate bottom — dress + shoes is valid
+// Bottoms are optional — you can wear just tops/dresses with shoes
 function validateCategories() {
-  const hasContent = (categoryFiles.tops.length > 0 || categoryFiles.dresses.length > 0) &&
-                     categoryFiles.bottoms.length > 0 &&
-                     categoryFiles.shoes.length > 0;
-  
+  const hasDresses = categoryFiles.dresses.length > 0;
+  const hasTops    = categoryFiles.tops.length > 0;
+  const hasBottoms = categoryFiles.bottoms.length > 0;
+  const hasShoes   = categoryFiles.shoes.length > 0;
+
   const missing = [];
-  if (categoryFiles.tops.length === 0 && categoryFiles.dresses.length === 0) {
-    missing.push('Tops or Dresses');
-  }
-  if (categoryFiles.bottoms.length === 0) {
-    missing.push('Bottoms');
-  }
-  if (categoryFiles.shoes.length === 0) {
-    missing.push('Shoes');
-  }
-  
-  return { valid: hasContent, missing };
+  if (!hasDresses && !hasTops) missing.push('Tops or Dresses');
+  if (!hasShoes) missing.push('Shoes');
+
+  // Valid if: (dresses OR tops) AND shoes
+  // Bottoms and Outerwear are optional
+  const valid = (hasDresses || hasTops) && hasShoes;
+  return { valid, missing };
 }
 
 // Pick a random entry from a category array
@@ -294,48 +366,83 @@ function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Build ai notes by occasion + actual weather
-function buildAiNote(occ) {
+// Build ai notes by occasion + style vibe + actual weather
+function buildAiNote(occ, vibe) {
   const weatherStr = currentWeather.temp !== null
     ? `${currentWeather.condition} at ${currentWeather.temp}°C`
     : 'current weather';
+  const vibeStr = vibe ? `with a ${vibe} edge` : '';
   const notes = {
-    'College': `A laid-back student look curated for ${weatherStr} — comfortable yet stylish for campus life.`,
-    'Office': `A polished, professional combination suited to ${weatherStr} that means business.`,
-    'Party': `A bold, eye-catching outfit ready to turn heads tonight — styled for ${weatherStr}.`,
-    'Casual Day Out': `Easy, breezy vibes perfect for a relaxed day out in ${weatherStr}.`
+    'College': `A laid-back ${vibe || 'student'} look ${vibeStr} curated for ${weatherStr}.`,
+    'Office': `A polished, ${vibe || 'professional'} combination ${vibeStr} suited to ${weatherStr}.`,
+    'Party': `A ${vibe || 'bold'}, eye-catching outfit ${vibeStr} ready to turn heads — styled for ${weatherStr}.`,
+    'Casual Day Out': `Easy, ${vibe || 'breezy'} vibes ${vibeStr} perfect for a relaxed day out in ${weatherStr}.`
   };
-  return notes[occ] || `A stylish combination curated for ${weatherStr}.`;
+  return notes[occ] || `A ${vibe || 'stylish'} combination ${vibeStr} curated for ${weatherStr}.`;
 }
 
 // Generate 3 distinct outfit combinations and display them
+// Fixes: dress never paired with a separate bottom; style vibe applied; optional outerwear
 function generateOutfitCombination() {
   const validation = validateCategories();
-
   if (!validation.valid) {
     alert(`❌ Missing items: ${validation.missing.join(', ')}\n\nPlease upload at least one item from each required category.`);
     return;
   }
 
   const occ = occasion.value;
-  const aiNote = buildAiNote(occ);
+  const styleVibeEl = document.getElementById('styleVibe');
+  const vibe = styleVibeEl ? styleVibeEl.value : '';
+  const aiNote = buildAiNote(occ, vibe);
   const outfits = [];
 
-  // Generate up to 3 distinct combinations
+  const hasDresses = categoryFiles.dresses.length > 0;
+  const hasTops    = categoryFiles.tops.length > 0;
+  const hasBottoms = categoryFiles.bottoms.length > 0;
+  const hasOuterwear = categoryFiles.outerwear.length > 0;
+
+  // Style vibe preference: elegant/bohemian/romantic prefer dresses;
+  // sporty/preppy prefer tops+bottoms
+  const dressPreferVibes = ['elegant', 'bohemian', 'romantic', 'vintage'];
+  const topPreferVibes   = ['sporty', 'preppy', 'funky', 'edgy'];
+  let dressWeight = 0.5; // default: 50% chance
+  if (dressPreferVibes.includes(vibe) && hasDresses) dressWeight = 0.8;
+  if (topPreferVibes.includes(vibe) && hasTops)      dressWeight = 0.2;
+  if (!hasDresses) dressWeight = 0;
+  if (!hasTops || !hasBottoms) dressWeight = 1;
+
   const usedCombos = new Set();
   let attempts = 0;
-  while (outfits.length < 3 && attempts < 30) {
+  while (outfits.length < 3 && attempts < 40) {
     attempts++;
-    const topPool = categoryFiles.dresses.length > 0 && Math.random() > 0.5
-      ? categoryFiles.dresses
-      : categoryFiles.tops;
-    const top = pickRandom(topPool);
-    const bottom = pickRandom(categoryFiles.bottoms);
+    const useDress = Math.random() < dressWeight;
+
+    let top, bottom = null, isDress = false;
+    if (useDress && hasDresses) {
+      top = pickRandom(categoryFiles.dresses);
+      isDress = true;        // ← NO separate bottom for dresses
+    } else if (hasTops && hasBottoms) {
+      top    = pickRandom(categoryFiles.tops);
+      bottom = pickRandom(categoryFiles.bottoms);
+    } else if (hasTops) {
+      // Tops only (bottoms optional)
+      top = pickRandom(categoryFiles.tops);
+    } else if (hasDresses) {
+      top = pickRandom(categoryFiles.dresses);
+      isDress = true;
+    } else {
+      continue;  // can't build a valid combo
+    }
+
     const shoe = pickRandom(categoryFiles.shoes);
-    const key = `${top.url}|${bottom.url}|${shoe.url}`;
+    
+    // Optionally add outerwear (40% chance if available)
+    const outerwear = (hasOuterwear && Math.random() < 0.4) ? pickRandom(categoryFiles.outerwear) : null;
+    
+    const key = `${top.url}|${bottom ? bottom.url : 'nobottom'}|${shoe.url}|${outerwear ? outerwear.url : 'noouterwear'}`;
     if (!usedCombos.has(key)) {
       usedCombos.add(key);
-      outfits.push({ top, bottom, shoe });
+      outfits.push({ top, bottom, shoe, isDress, outerwear });
     }
   }
 
@@ -347,46 +454,78 @@ function generateOutfitCombination() {
   if (weatherBadge) weatherBadge.textContent = weatherDisplay;
 
   chosenOutfit = null;
-  renderOutfitOptions(outfits, occ, aiNote);
+  renderOutfitOptions(outfits, occ, aiNote, vibe);
 
   recommendationSection.hidden = false;
   recommendationSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Render 3 outfit option cards
-function renderOutfitOptions(outfits, occ, aiNote) {
+// Render outfit option cards — respects dress/top compatibility and optional outerwear
+function renderOutfitOptions(outfits, occ, aiNote, vibe) {
   outfitOptionsGrid.innerHTML = '';
+  const matchScores = [94, 88, 91];
 
   outfits.forEach((outfit, i) => {
     const card = document.createElement('div');
     card.className = 'outfit-option-card';
     card.dataset.index = i;
 
-    const matchScores = [94, 88, 91];
+    const vibeBadge = vibe ? ` · <span style="color:#7c3aed">${vibe}</span>` : '';
+    const weatherDisplay = currentWeather.temp !== null
+      ? `${currentWeather.condition}, ${currentWeather.temp}°C` : 'Cloudy, 18°C';
 
-    card.innerHTML = `
-      <div class="option-badge">Option ${i + 1} &nbsp;·&nbsp; ${matchScores[i]}% match</div>
-      <div class="option-items">
+    // Build items HTML: outerwear on top, then core items, then shoes
+    let itemsHtml = '';
+    
+    // Add outerwear first (if present)
+    if (outfit.outerwear) {
+      itemsHtml += `
+        <div class="option-item option-wide">
+          <img src="${outfit.outerwear.url}" alt="Outerwear">
+          <span>🧥 Outerwear</span>
+        </div>`;
+    }
+    
+    // Add core items
+    if (outfit.isDress) {
+      itemsHtml += `
+        <div class="option-item option-wide">
+          <img src="${outfit.top.url}" alt="Dress">
+          <span>👗 Dress</span>
+        </div>`;
+    } else {
+      itemsHtml += `
         <div class="option-item">
           <img src="${outfit.top.url}" alt="Top">
-          <span>Top / Dress</span>
-        </div>
+          <span>👕 Top</span>
+        </div>`;
+      if (outfit.bottom) {
+        itemsHtml += `
         <div class="option-item">
           <img src="${outfit.bottom.url}" alt="Bottom">
-          <span>Bottom</span>
-        </div>
+          <span>👖 Bottom</span>
+        </div>`;
+      }
+    }
+    
+    // Add shoes
+    itemsHtml += `
         <div class="option-item">
           <img src="${outfit.shoe.url}" alt="Shoes">
-          <span>Shoes</span>
-        </div>
-      </div>
+          <span>👞 Shoes</span>
+        </div>`;
+
+    const safeNote = aiNote.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+    card.innerHTML = `
+      <div class="option-badge">Option ${i + 1} · ${matchScores[i]}%${vibeBadge}</div>
+      <div class="option-items">${itemsHtml}</div>
       <div class="option-meta">
-        <p><strong>Occasion:</strong> ${occ}</p>
-        <p><strong>Weather:</strong> Cloudy, 18°C</p>
+        <p><strong>Occasion:</strong> ${occ}${vibe ? ` &bull; <em>${vibe} vibe</em>` : ''}</p>
+        <p><strong>Weather:</strong> ${weatherDisplay}</p>
         <p class="option-note">${aiNote}</p>
       </div>
       <div class="option-actions">
-        <button class="choose-btn" onclick="chooseOutfit(${i}, '${occ}', '${aiNote.replace(/'/g, "&apos;")}')">
+        <button class="choose-btn" onclick="chooseOutfit(${i}, '${occ}', '${safeNote}', '${vibe || ''}')">
           💾 Save This Outfit
         </button>
       </div>
@@ -394,12 +533,11 @@ function renderOutfitOptions(outfits, occ, aiNote) {
     outfitOptionsGrid.appendChild(card);
   });
 
-  // Store outfits for save handler
   outfitOptionsGrid._outfits = outfits;
 }
 
 // User chose a specific outfit to save
-async function chooseOutfit(index, occ, aiNote) {
+async function chooseOutfit(index, occ, aiNote, vibe) {
   if (!userAuthenticated) {
     alert('Please login to save outfits.');
     window.location.href = '/login';
@@ -412,14 +550,14 @@ async function chooseOutfit(index, occ, aiNote) {
   const outfitData = {
     occasion: occ,
     items: {
-      top: outfit.top.name || 'Top/Dress',
-      bottom: outfit.bottom.name || 'Bottom',
-      shoes: outfit.shoe.name || 'Shoes'
+      outerwear: outfit.outerwear ? `Outerwear: ${outfit.outerwear.name}` : null,
+      top: outfit.isDress ? `Dress: ${outfit.top.name}` : `Top: ${outfit.top.name}`,
+      bottom: outfit.isDress ? null : (outfit.bottom ? `Bottom: ${outfit.bottom.name}` : null),
+      shoes: `Shoes: ${outfit.shoe.name}`
     },
     weather: currentWeather.temp !== null
-      ? `${currentWeather.condition}, ${currentWeather.temp}°C`
-      : 'Cloudy, 18°C',
-    aiNote: aiNote
+      ? `${currentWeather.condition}, ${currentWeather.temp}°C` : 'Cloudy, 18°C',
+    aiNote: aiNote + (vibe ? ` (${vibe} style)` : '')
   };
 
   // Highlight selected card

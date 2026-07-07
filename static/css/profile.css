@@ -162,11 +162,38 @@ body {
   margin-bottom: 60px;
 }
 
-.recommendations-section h2 {
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-header-row h2 {
   font-size: 28px;
   color: #1f2937;
-  margin-bottom: 30px;
   font-weight: 800;
+  margin: 0;
+}
+
+.see-all-btn {
+  display: inline-block;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.see-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79,70,229,0.3);
 }
 
 .recommendations-grid {

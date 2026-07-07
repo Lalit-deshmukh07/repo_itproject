@@ -482,6 +482,57 @@ body{
   border-radius:10px;
 }
 
+/* Two-select control row */
+.upload-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.upload-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optional-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.upload-control-group select {
+  padding: 13px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  width: 100%;
+}
+
+.upload-control-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+}
+
 .upload-box button{
   padding:14px 30px;
   border:none;
@@ -1137,6 +1188,15 @@ body{
   cursor: default;
 }
 
+/* 2-item layout when dress is selected (no bottom) */
+.option-items-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.option-wide {
+  /* dress takes full visual weight in 2-col layout */
+}
+
 /* GENERATE MORE BAR */
 .generate-more-bar {
   text-align: center;
@@ -1232,6 +1292,7 @@ body{
   .outfit-card img { height: 240px; }
 
   .upload-categories { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .upload-controls { grid-template-columns: 1fr; gap: 14px; }
   .upload-box { width: 100%; padding: 28px 20px; }
   .upload-box select, .upload-box button { width: 100%; }
 

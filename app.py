@@ -92,6 +92,10 @@ def profile():
     return render_template('profile.html')
 
 
+@app.route('/recommendations')
+def recommendations():
+    return render_template('recommendations.html')
+
 # ✅ CORRECT LINE
 if __name__ == '__main__':
     # Create database tables
