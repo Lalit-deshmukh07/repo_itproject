@@ -76,3 +76,8 @@ Protected Routes + Authorization: Unauthenticated requests could access /tasks a
 
 02/07/26
 Test Infrastructure: Initial test runs failed with ModuleNotFoundError: No module named 'app' and database connection errors because no isolated test environment existed. pytest -v showed FAILED tests/test_smoke.py::test_client_fixture_wires_alice_as_current_user - sqlite3.OperationalError: no such table: users before fixtures were configured. I Added pytest, httpx to requirements.txt, created in-memory SQLite fixtures db_session, alice, and client with dependency overrides for get_db and get_current_user, then verified with a passing smoke test. Testing infrastructure was started in class and a quiz on authentication was given.
+
+07/07/26
+After creating test_task_service.py and adding the code in the error i got was len() called on single Task object instead of list. So I tried to fix it by changing the test to call service.list_tasks(alice) instead of get_task(), and fixed FakeTaskRepository method name from all_for_users() to all_for_user().
+And for test_task_api.py the error was ResponseValidationError: value is not a valid dict when validating Task responses. I changed Pydantic schemas from ConfigDict(from_attributes=True) (v2 syntax) to Config class with orm_mode = True (v1 syntax required by Pydantic 1.10.26) to fix it.
+For the test_authorization.py error tests expected 403 Forbidden but got 200/204—users could access other users' tasks. And fixed by adding TaskNotOwnedByUserError exception, added current_user parameter to get_task() and delete_task(), added ownership check, and updated controller to return 403 on unauthorized access.

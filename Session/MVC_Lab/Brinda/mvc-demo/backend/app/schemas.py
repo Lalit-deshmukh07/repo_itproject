@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class TaskCreate(BaseModel):
@@ -10,9 +10,13 @@ class TaskCreate(BaseModel):
 
 class Task(TaskCreate):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+
+    class Config:
+        orm_mode = True
 
 class User(BaseModel):
     id: int
-    username: str
-    model_config = ConfigDict(from_attributes=True)
+    name: str
+
+    class Config:
+        orm_mode = True
