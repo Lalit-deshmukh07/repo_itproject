@@ -1,0 +1,19 @@
+{
+    "paths":  {
+                  "/auth/login":  {
+                                      "post":  {
+                                                   "summary":  "User login",
+                                                   "responses":  {
+                                                                     "200":  {
+                                                                                 "description":  "Login successful"
+                                                                             }
+                                                                 }
+                                               }
+                                  }
+              },
+    "openapi":  "3.0.0",
+    "info":  {
+                 "version":  "1.0.0",
+                 "title":  "Task Management API"
+             }
+}

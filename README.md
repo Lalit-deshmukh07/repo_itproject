@@ -38,12 +38,26 @@ service-a  ──►  service-b
 
 ## Getting Started
 
-### Prerequisites
+### Quick Start (Local Development)
+
+For **running locally without Docker**, see [SETUP.md](SETUP.md) for step-by-step instructions.
+
+Quick command:
+```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python app.py
+```
+
+The app will be available at `http://localhost:5000`.
+
+### Prerequisites (Docker)
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
 - Git
 
-### Run locally
+### Run with Docker
 
 ```bash
 git clone https://github.com/<your-org>/<your-repo>.git

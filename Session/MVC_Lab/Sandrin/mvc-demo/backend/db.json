@@ -1,0 +1,70 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 3,
+      "name": "Brinda",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 4,
+      "name": "Deval",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 5,
+      "name": "Lalit",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 6,
+      "name": "Grishma",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 7,
+      "name": "Sandrin",
+      "password_hash": "$pbkdf2-sha256$29000$mjPmPKeUUuqd817LeS9FiA$NBiKJZlB6VnLZlldidebQ.vZTabFz060Az1ltiaKZXk"
+    },
+    {
+      "id": 8,
+      "name": "hallo",
+      "password_hash": "$pbkdf2-sha256$29000$USrFOIfQGgOAMAZgLIWwtg$P4i.8.XSEgHdi5hHBiFF2K0yAtSKw7OCCE//eKb9De8"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "my name",
+      "owner_id": 1,
+      "created_at": "2026-07-02T16:29:44.914175+00:00"
+    },
+    {
+      "id": 3,
+      "title": "Write documentation",
+      "owner_id": 3,
+      "created_at": "2026-07-02T16:39:35.025011+00:00"
+    },
+    {
+      "id": 4,
+      "title": "hmm",
+      "owner_id": 2,
+      "created_at": "2026-07-02T16:47:19.235258+00:00"
+    },
+    {
+      "id": 5,
+      "title": "hmmm",
+      "owner_id": 8,
+      "created_at": "2026-07-02T16:48:15.395492+00:00"
+    }
+  ]
+}

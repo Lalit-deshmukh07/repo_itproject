@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy==2.0.50
+psycopg2-binary
+alembic==1.18.4
+bcrypt==4.0.1
+passlib[bcrypt]==1.7.4
+pyJWT==2.9.0
+python-multipart
+pytest==8.3.4
+pytest-cov==6.0.0
+httpx==0.25.2

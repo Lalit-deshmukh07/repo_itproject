@@ -75,5 +75,3 @@ I set up the project's testing environment by configuring pytest with an in-memo
 
 **Date:07 July 2026**
 I continued improving the test suite by fixing issues in the service, API, and authorization tests. I updated the repository methods, resolved Pydantic compatibility problems, and implemented proper ownership validation until all authorization tests passed successfully.
-
-make some changes
