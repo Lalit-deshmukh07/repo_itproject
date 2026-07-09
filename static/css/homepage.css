@@ -624,6 +624,20 @@ body{
   margin-top: 4px;
 }
 
+.weather-feels-like {
+  color: #374151;
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.weather-wind-status {
+  color: #4b5563;
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
 .weather-locate-btn {
   padding: 10px 18px;
   background: #eef2ff;
@@ -643,6 +657,86 @@ body{
   border-color: #4f46e5;
 }
 
+.weather-scene {
+  margin-bottom: 16px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.weather-scene:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.weather-scene-main,
+.weather-scene-side {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.weather-scene-main {
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+.weather-scene-side {
+  animation: sway 2.8s ease-in-out infinite;
+}
+
+.weather-scene-content h4 {
+  font-size: 16px;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.weather-scene-content p {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.weather-scene.hot {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fdba74;
+}
+
+.weather-scene.rain,
+.weather-scene.sunny-rain-later {
+  background: linear-gradient(135deg, #ecfeff 0%, #e0f2fe 100%);
+  border-color: #7dd3fc;
+}
+
+.weather-scene.storm {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: #94a3b8;
+}
+
+.weather-scene.cold {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.weather-scene.windy,
+.weather-scene.clear {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border-color: #c7d2fe;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(2px) rotate(-5deg); }
+}
+
 .weather-suggestion {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border: 1px solid #bae6fd;
@@ -651,6 +745,19 @@ body{
   font-size: 15px;
   color: #0c4a6e;
   line-height: 1.6;
+}
+
+.weather-future-note {
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.weather-protection-note {
+  margin-top: 8px;
+  color: #0b3b2e;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .weather-card h3{

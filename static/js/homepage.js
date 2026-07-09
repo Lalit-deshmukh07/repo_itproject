@@ -19,9 +19,10 @@ let categoryFiles = {
 // The outfit the user chose to save
 let chosenOutfit = null;
 let userAuthenticated = false;
+let currentUserStorageKey = null;
 
 // Current weather data (updated by loadWeather)
-let currentWeather = { temp: null, condition: 'Clear', city: '' };
+let currentWeather = { temp: null, feelsLike: null, condition: 'Clear', city: '', shortTerm: null };
 
 // ─── WEATHER API ─────────────────────────────────────────
 const WMO_CONDITIONS = {
@@ -52,6 +53,194 @@ function getWeatherIcon(condition) {
   return '🌤️';
 }
 
+function isRainLikelyCode(code) {
+  return [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code);
+}
+
+function getWindSeverity(speedMph, gustMph) {
+  const speed = Number(speedMph || 0);
+  const gust = Number(gustMph || 0);
+
+  if (gust >= 30 || speed >= 24) {
+    return {
+      label: 'Very windy',
+      note: 'Wind is strong. Prefer secure outerwear and avoid loose accessories.'
+    };
+  }
+
+  if (gust >= 22 || speed >= 16) {
+    return {
+      label: 'Moderately windy',
+      note: 'A light jacket is recommended, especially for outdoor travel.'
+    };
+  }
+
+  return {
+    label: 'Light wind',
+    note: 'Comfortable wind conditions right now.'
+  };
+}
+
+function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
+  if (!hourly || !Array.isArray(hourly.time)) {
+    return {
+      futureNote: 'No short-term forecast detail available right now.',
+        protectionAdvice: '',
+        rainExpected: false
+    };
+  }
+
+  const now = currentIsoTime ? new Date(currentIsoTime) : new Date();
+  if (Number.isNaN(now.getTime())) {
+    return {
+      futureNote: 'No short-term forecast detail available right now.',
+        protectionAdvice: '',
+        rainExpected: false
+    };
+  }
+
+  const sixHours = 6 * 60 * 60 * 1000;
+  const todayY = now.getFullYear();
+  const todayM = now.getMonth();
+  const todayD = now.getDate();
+  let rainSoon = null;
+  let rainLaterToday = null;
+
+  for (let i = 0; i < hourly.time.length; i++) {
+    const t = new Date(hourly.time[i]);
+    if (Number.isNaN(t.getTime()) || t <= now) continue;
+
+    // Only evaluate rain for the remainder of the current day.
+    const isSameDay = t.getFullYear() === todayY && t.getMonth() === todayM && t.getDate() === todayD;
+    if (!isSameDay) continue;
+
+    const delta = t.getTime() - now.getTime();
+    const precipProb = Number(hourly.precipitation_probability?.[i] || 0);
+    const precipMm = Number(hourly.precipitation?.[i] || 0);
+    const hourlyWind = Number(hourly.wind_speed_10m?.[i] || 0);
+    const isRainySlot = precipMm > 0;
+
+    if (!isRainySlot) continue;
+
+    const rainPoint = {
+      hoursAhead: Math.max(1, Math.round(delta / (60 * 60 * 1000))),
+      precipProb,
+      wind: hourlyWind
+    };
+
+    if (delta <= sixHours) {
+      rainSoon = rainPoint;
+      break;
+    }
+
+    if (!rainLaterToday) {
+      rainLaterToday = rainPoint;
+    }
+  }
+
+  if (rainSoon) {
+    let protectionAdvice = '';
+    if (rainSoon.wind >= 18) {
+      protectionAdvice = `Rain may start in about ${rainSoon.hoursAhead} hour(s) and wind may be around ${Math.round(rainSoon.wind)} mph. Prefer a hooded raincoat over an umbrella.`;
+    } else {
+      protectionAdvice = `Rain may start in about ${rainSoon.hoursAhead} hour(s) with lighter wind (~${Math.round(rainSoon.wind)} mph). Carry an umbrella.`;
+    }
+
+    return {
+      futureNote: `It looks dry now, but rain is likely within the next ${rainSoon.hoursAhead} hour(s) (${Math.round(rainSoon.precipProb)}% chance).`,
+        protectionAdvice,
+        rainExpected: true
+    };
+  }
+
+  if (rainLaterToday) {
+    return {
+      futureNote: `No immediate rain signal, but rain may develop in around ${rainLaterToday.hoursAhead} hour(s) (${Math.round(rainLaterToday.precipProb)}% chance).`,
+        protectionAdvice: 'Consider carrying foldable rain protection if you will be out for long.',
+        rainExpected: true
+    };
+  }
+
+  return {
+    futureNote: 'No rain forecast for the rest of today.',
+      protectionAdvice: '',
+      rainExpected: false
+  };
+}
+
+function getWeatherScene(condition, temp, shortTerm) {
+  const c = (condition || '').toLowerCase();
+    const rainSoon = !!shortTerm?.rainExpected;
+
+  if (c.includes('thunder')) {
+    return {
+      themeClass: 'storm',
+      title: 'Storm Alert Look',
+      subtitle: 'Keep waterproof layers and avoid flimsy umbrellas.',
+      mainEmoji: '⛈️',
+      sideEmoji: '🧥'
+    };
+  }
+
+  if (c.includes('rain') || c.includes('drizzle') || c.includes('shower')) {
+    return {
+      themeClass: 'rain',
+      title: 'Rainy Street Scene',
+      subtitle: 'Umbrella if winds are light, raincoat if it is gusty.',
+      mainEmoji: '🌧️',
+      sideEmoji: '☂️'
+    };
+  }
+
+  if (temp >= 29) {
+    return {
+      themeClass: 'hot',
+      title: 'Beach Weather Vibe',
+      subtitle: 'Keep fabrics breathable and stay hydrated.',
+      mainEmoji: '🏖️',
+      sideEmoji: '🕶️'
+    };
+  }
+
+  if (c.includes('snow') || temp <= 8) {
+    return {
+      themeClass: 'cold',
+      title: 'Cold Weather Mode',
+      subtitle: 'Layer up and prefer insulated outerwear.',
+      mainEmoji: '❄️',
+      sideEmoji: '🧤'
+    };
+  }
+
+  if (c.includes('wind') || c.includes('overcast')) {
+    return {
+      themeClass: 'windy',
+      title: 'Breezy City Mood',
+      subtitle: 'A light jacket can keep you comfortable outdoors.',
+      mainEmoji: '🌬️',
+      sideEmoji: '🧥'
+    };
+  }
+
+  if (rainSoon) {
+    return {
+      themeClass: 'sunny-rain-later',
+      title: 'Sunny Now, Rain Later',
+      subtitle: 'Carry foldable rain protection just in case.',
+      mainEmoji: '🌤️',
+      sideEmoji: '☔'
+    };
+  }
+
+  return {
+    themeClass: 'clear',
+    title: 'Clear Day Style',
+    subtitle: 'Great conditions for lightweight outfits.',
+    mainEmoji: '☀️',
+    sideEmoji: '👟'
+  };
+}
+
 function getOutfitForWeather(condition, temp, occ) {
   const c = condition.toLowerCase();
   const isHot = temp >= 25;
@@ -62,32 +251,32 @@ function getOutfitForWeather(condition, temp, occ) {
 
   const base = {
     College: {
-      hot: 'Light t-shirt, shorts, sneakers',
-      warm: 'Casual shirt, jeans, sneakers',
-      cold: 'Hoodie, jeans, sneakers & light jacket',
-      rain: 'Waterproof jacket, jeans, ankle boots',
-      snow: 'Thick coat, thermal jeans, boots'
+      hot: 'Breathable tee or shirt + shorts/chinos, or a light dress, with sneakers/sandals',
+      warm: 'Casual shirt or top + jeans/chinos, or a midi dress, with sneakers',
+      cold: 'Hoodie/sweater + jeans/trousers, or a knit dress + jacket, with sneakers/boots',
+      rain: 'Waterproof jacket + jeans/trousers, or a weather-safe dress + layer, with water-resistant shoes',
+      snow: 'Thick coat + thermal layers + trousers, or warm knit dress + tights, with insulated boots'
     },
     Office: {
-      hot: 'Breathable dress shirt, chinos, loafers',
-      warm: 'Blazer, dress trousers, oxford shoes',
-      cold: 'Wool suit, overcoat, leather shoes',
-      rain: 'Trench coat, dark trousers, waterproof shoes',
-      snow: 'Wool coat, formal trousers, insulated shoes'
+      hot: 'Breathable shirt/blouse + chinos/trousers, or a structured dress, with loafers/flats',
+      warm: 'Blazer + tailored trousers, or a midi dress + blazer, with loafers/heels',
+      cold: 'Wool layers + formal trousers, or long-sleeve dress + coat, with leather shoes/boots',
+      rain: 'Trench/raincoat + dark trousers, or dress + water-safe layer, with waterproof shoes',
+      snow: 'Wool coat + insulated formal layers, or warm dress + tights + coat, with insulated footwear'
     },
     Party: {
-      hot: 'Stylish sundress or linen shirt, sandals',
-      warm: 'Cocktail dress or fitted blazer, heels',
-      cold: 'Party dress with cardigan or suit, boots',
-      rain: 'Chic raincoat, party dress, ankle boots',
-      snow: 'Glamorous coat, evening wear, boots'
+      hot: 'Linen shirt + tailored bottoms, or a breezy dress, with sandals/loafers',
+      warm: 'Fitted blazer + smart pants, or cocktail dress/jumpsuit, with heels/derbies',
+      cold: 'Layered party look: blazer/suit or dress + cardigan, with boots',
+      rain: 'Chic rain layer over party wear (suit or dress), with water-friendly boots',
+      snow: 'Warm statement coat over evening wear (suit or dress), with insulated boots'
     },
     'Casual Day Out': {
-      hot: 'Tank top, shorts, flip-flops or sandals',
-      warm: 'Light sweater, casual jeans, sneakers',
-      cold: 'Puffer jacket, joggers, trainers',
-      rain: 'Rain jacket, waterproof pants, boots',
-      snow: 'Parka, thermal base, snow boots'
+      hot: 'Tank/tee + shorts or relaxed pants, or a light dress, with sandals/sneakers',
+      warm: 'Light sweater or shirt + jeans/joggers, or a casual dress + light layer, with sneakers',
+      cold: 'Puffer/jacket + joggers/jeans, or knit dress + tights + layer, with trainers/boots',
+      rain: 'Rain jacket + quick-dry bottoms, or dress + raincoat, with waterproof boots/sneakers',
+      snow: 'Parka + thermal base + warm bottoms, or warm dress + leggings, with snow boots'
     }
   };
 
@@ -138,17 +327,22 @@ async function loadWeather() {
   // Fetch real weather from Open-Meteo (free, no key)
   try {
     const wRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&wind_speed_unit=mph`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m&hourly=weather_code,precipitation_probability,precipitation,wind_speed_10m&forecast_days=2&timezone=auto&wind_speed_unit=mph`
     );
     const wData = await wRes.json();
     const temp = Math.round(wData.current.temperature_2m);
+    const feelsLike = Math.round(wData.current.apparent_temperature);
     const condition = getWeatherCondition(wData.current.weather_code);
     const wind = Math.round(wData.current.wind_speed_10m);
+    const gust = Math.round(wData.current.wind_gusts_10m || wData.current.wind_speed_10m);
     const icon = getWeatherIcon(condition);
     const occ = occasion ? occasion.value || 'Casual Day Out' : 'Casual Day Out';
     const outfitSuggestion = getOutfitForWeather(condition, temp, occ);
+    const windSeverity = getWindSeverity(wind, gust);
+    const shortTerm = analyzeShortTermRainOutlook(wData.hourly, wData.current.time);
+    const scene = getWeatherScene(condition, temp, shortTerm);
 
-    currentWeather = { temp, condition, city };
+    currentWeather = { temp, feelsLike, condition, city, shortTerm };
 
     // Update weather badge in outfit section
     const badge = document.getElementById('weatherBadge');
@@ -160,12 +354,24 @@ async function loadWeather() {
         <div class="weather-info">
           <h3 id="weatherCity">${city}</h3>
           <p class="temp">${temp}°C &bull; ${condition}</p>
-          <p class="weather-wind">💨 Wind: ${wind} mph</p>
+            <p class="weather-feels-like">Feels like ${feelsLike}°C</p>
+            <p class="weather-wind">💨 Wind: ${wind} mph &bull; Gusts: ${gust} mph</p>
+            <p class="weather-wind-status">${windSeverity.label} &mdash; ${windSeverity.note}</p>
         </div>
         <button class="weather-locate-btn" onclick="loadWeather()" title="Refresh location">📍 Refresh</button>
       </div>
+      <div class="weather-scene ${scene.themeClass}">
+        <div class="weather-scene-main" aria-hidden="true">${scene.mainEmoji}</div>
+        <div class="weather-scene-content">
+          <h4>${scene.title}</h4>
+          <p>${scene.subtitle}</p>
+        </div>
+        <div class="weather-scene-side" aria-hidden="true">${scene.sideEmoji}</div>
+      </div>
       <div class="weather-suggestion">
         <strong>Suggested outfit:</strong> ${outfitSuggestion}
+          <p class="weather-future-note">🔎 ${shortTerm.futureNote}</p>
+          ${shortTerm.protectionAdvice ? `<p class="weather-protection-note">🛡️ ${shortTerm.protectionAdvice}</p>` : ''}
       </div>
     `;
   } catch (e) {
@@ -181,15 +387,24 @@ if (occasion) {
       const suggestion = getOutfitForWeather(currentWeather.condition, currentWeather.temp, occ);
       const card = document.getElementById('weatherCard');
       const suggEl = card?.querySelector('.weather-suggestion');
-      if (suggEl) suggEl.innerHTML = `<strong>Suggested outfit:</strong> ${suggestion}`;
+      if (suggEl) {
+        const futureNote = currentWeather.shortTerm?.futureNote
+          ? `<p class="weather-future-note">🔎 ${currentWeather.shortTerm.futureNote}</p>`
+          : '';
+        const protectionNote = currentWeather.shortTerm?.protectionAdvice
+          ? `<p class="weather-protection-note">🛡️ ${currentWeather.shortTerm.protectionAdvice}</p>`
+          : '';
+
+        suggEl.innerHTML = `<strong>Suggested outfit:</strong> ${suggestion}${futureNote}${protectionNote}`;
+      }
     }
   });
 }
 
 // ─── INIT ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  checkAuthStatus();
-  restoreFromStorage();      // ← load saved photos on page load
+document.addEventListener('DOMContentLoaded', async function() {
+  await checkAuthStatus();
+  restoreFromStorage();      // load saved photos for the current authenticated user
   setupCategoryUploads();
   setupGenerateMoreBtn();
   loadWeather();
@@ -201,9 +416,16 @@ async function checkAuthStatus() {
     const response = await fetch('/api/auth/status');
     const data = await response.json();
     userAuthenticated = data.authenticated;
+
+    if (userAuthenticated && data.user && data.user.id) {
+      currentUserStorageKey = `${STORAGE_KEY_PREFIX}_${data.user.id}`;
+    } else {
+      currentUserStorageKey = null;
+    }
   } catch (error) {
     console.log('Auth check failed:', error);
     userAuthenticated = false;
+    currentUserStorageKey = null;
   }
 }
 
@@ -312,15 +534,17 @@ function removeUploadedItem(category, index) {
 }
 
 // ─── LOCALSTORAGE PERSISTENCE ────────────────────────────
-const STORAGE_KEY = 'wearitright_wardrobe_v3';
+const STORAGE_KEY_PREFIX = 'wearitright_wardrobe_v4_user';
 
 function saveToStorage() {
   try {
+    if (!currentUserStorageKey) return;
+
     const data = {};
     ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
       data[cat] = categoryFiles[cat].map(f => ({ url: f.url, name: f.name }));
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(currentUserStorageKey, JSON.stringify(data));
   } catch (e) {
     console.warn('Storage full — not all images saved:', e);
   }
@@ -328,8 +552,11 @@ function saveToStorage() {
 
 function restoreFromStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!currentUserStorageKey) return;
+
+    const raw = localStorage.getItem(currentUserStorageKey);
     if (!raw) return;
+
     const data = JSON.parse(raw);
     ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
       if (data[cat] && data[cat].length > 0) {

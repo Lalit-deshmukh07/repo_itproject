@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_cors import CORS
 from flask_session import Session
 import sys
@@ -66,6 +66,19 @@ except ImportError as e:
 # ✅ Register blueprint here
 app.register_blueprint(auth)
 
+
+def _is_authenticated():
+    """Return True if a user is logged in via session."""
+    return bool(session.get('user_id'))
+
+
+def _no_store(response):
+    """Prevent sensitive pages from being cached by browser/proxies."""
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 @app.route('/')
 def home():
     return render_template('homepage.html')
@@ -84,17 +97,32 @@ def reset_password():
 
 @app.route('/profile-setup')
 def profile_setup():
+    if not _is_authenticated():
+        return redirect(url_for('login', next=request.path))
     return render_template('profile_setup.html')
 
 
 @app.route('/profile')
 def profile():
+    if not _is_authenticated():
+        return redirect(url_for('login', next=request.path))
     return render_template('profile.html')
 
 
 @app.route('/recommendations')
 def recommendations():
+    if not _is_authenticated():
+        return redirect(url_for('login', next=request.path))
     return render_template('recommendations.html')
+
+
+@app.after_request
+def add_security_headers(response):
+    """Disable caching for authenticated HTML pages that may include personal data."""
+    sensitive_paths = {'/profile', '/profile-setup', '/recommendations'}
+    if request.path in sensitive_paths:
+        return _no_store(response)
+    return response
 
 # ✅ CORRECT LINE
 if __name__ == '__main__':
