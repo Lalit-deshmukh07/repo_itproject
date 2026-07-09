@@ -23,6 +23,9 @@ let currentUserStorageKey = null;
 
 // Current weather data (updated by loadWeather)
 let currentWeather = { temp: null, feelsLike: null, condition: 'Clear', city: '', shortTerm: null };
+let selectedLocationQuery = null;
+let manualLocationCandidates = [];
+let selectedForecastDate = null;
 
 // ─── WEATHER API ─────────────────────────────────────────
 const WMO_CONDITIONS = {
@@ -53,6 +56,63 @@ function getWeatherIcon(condition) {
   return '🌤️';
 }
 
+function toLocalDateString(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getTodayLocalDateString() {
+  return toLocalDateString(new Date());
+}
+
+function formatShortDate(dateStr) {
+  if (!dateStr) return 'today';
+  const dt = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(dt.getTime())) return dateStr;
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function findForecastSnapshotForDate(hourly, targetDateStr) {
+  if (!hourly || !Array.isArray(hourly.time) || !targetDateStr) return null;
+
+  const targetRows = [];
+  for (let i = 0; i < hourly.time.length; i++) {
+    const timeStr = hourly.time[i];
+    if (!timeStr || typeof timeStr !== 'string') continue;
+    if (!timeStr.startsWith(targetDateStr)) continue;
+
+    const hour = Number(timeStr.slice(11, 13));
+    targetRows.push({
+      idx: i,
+      hour,
+      timeStr,
+      temperature: Number(hourly.temperature_2m?.[i]),
+      feelsLike: Number(hourly.apparent_temperature?.[i]),
+      code: hourly.weather_code?.[i],
+      wind: Number(hourly.wind_speed_10m?.[i]),
+      gust: Number(hourly.wind_gusts_10m?.[i]),
+      precipProb: Number(hourly.precipitation_probability?.[i] || 0)
+    });
+  }
+
+  if (targetRows.length === 0) return null;
+
+  // Pick the row closest to midday for outfit planning.
+  let best = targetRows[0];
+  let bestDist = Math.abs(best.hour - 12);
+  for (const row of targetRows) {
+    const dist = Math.abs(row.hour - 12);
+    if (dist < bestDist) {
+      best = row;
+      bestDist = dist;
+    }
+  }
+
+  return best;
+}
+
 function isRainLikelyCode(code) {
   return [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code);
 }
@@ -81,7 +141,7 @@ function getWindSeverity(speedMph, gustMph) {
   };
 }
 
-function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
+function analyzeShortTermRainOutlook(hourly, currentIsoTime, targetDateStr) {
   if (!hourly || !Array.isArray(hourly.time)) {
     return {
       futureNote: 'No short-term forecast detail available right now.',
@@ -103,6 +163,9 @@ function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
   const todayY = now.getFullYear();
   const todayM = now.getMonth();
   const todayD = now.getDate();
+  const targetDay = targetDateStr || getTodayLocalDateString();
+  const todayStr = getTodayLocalDateString();
+  const isTodayTarget = targetDay === todayStr;
   let rainSoon = null;
   let rainLaterToday = null;
 
@@ -111,8 +174,13 @@ function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
     if (Number.isNaN(t.getTime()) || t <= now) continue;
 
     // Only evaluate rain for the remainder of the current day.
-    const isSameDay = t.getFullYear() === todayY && t.getMonth() === todayM && t.getDate() === todayD;
-    if (!isSameDay) continue;
+    if (isTodayTarget) {
+      const isSameDay = t.getFullYear() === todayY && t.getMonth() === todayM && t.getDate() === todayD;
+      if (!isSameDay) continue;
+    } else {
+      const rowDate = toLocalDateString(t);
+      if (rowDate !== targetDay) continue;
+    }
 
     const delta = t.getTime() - now.getTime();
     const precipProb = Number(hourly.precipitation_probability?.[i] || 0);
@@ -128,7 +196,7 @@ function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
       wind: hourlyWind
     };
 
-    if (delta <= sixHours) {
+    if (isTodayTarget && delta <= sixHours) {
       rainSoon = rainPoint;
       break;
     }
@@ -154,6 +222,14 @@ function analyzeShortTermRainOutlook(hourly, currentIsoTime) {
   }
 
   if (rainLaterToday) {
+    if (!isTodayTarget) {
+      return {
+        futureNote: `Rain is forecast on ${formatShortDate(targetDay)} (around ${rainLaterToday.hoursAhead}h from now view).`,
+        protectionAdvice: 'Carry rain protection for that day. Use a raincoat if winds are strong.',
+        rainExpected: true
+      };
+    }
+
     return {
       futureNote: `No immediate rain signal, but rain may develop in around ${rainLaterToday.hoursAhead} hour(s) (${Math.round(rainLaterToday.precipProb)}% chance).`,
         protectionAdvice: 'Consider carrying foldable rain protection if you will be out for long.',
@@ -288,65 +364,141 @@ function getOutfitForWeather(condition, temp, occ) {
   return occOutfits.warm;
 }
 
-async function loadWeather() {
+async function searchLocationsByName(query) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en&format=json`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data || !data.results || data.results.length === 0) {
+    return [];
+  }
+
+  return data.results.map((item) => {
+    const cityLabelParts = [item.name, item.admin1, item.country].filter(Boolean);
+    return {
+      lat: item.latitude,
+      lon: item.longitude,
+      city: cityLabelParts.join(', ')
+    };
+  });
+}
+
+async function loadWeather(locationQuery) {
   const card = document.getElementById('weatherCard');
   if (!card) return;
 
   let lat, lon, city = 'Your Location';
+  let forcedManualCoordinates = null;
+
+  if (typeof locationQuery === 'string') {
+    selectedLocationQuery = locationQuery.trim() || null;
+  } else if (locationQuery === null) {
+    selectedLocationQuery = null;
+  } else if (locationQuery && typeof locationQuery === 'object' && Number.isFinite(locationQuery.lat) && Number.isFinite(locationQuery.lon)) {
+    selectedLocationQuery = locationQuery.city || selectedLocationQuery;
+    forcedManualCoordinates = locationQuery;
+  }
+
+  if (!selectedForecastDate) {
+    selectedForecastDate = getTodayLocalDateString();
+  }
+
+  const usingManualLocation = !!selectedLocationQuery || !!forcedManualCoordinates;
+
+  if (forcedManualCoordinates) {
+    lat = forcedManualCoordinates.lat;
+    lon = forcedManualCoordinates.lon;
+    city = forcedManualCoordinates.city || selectedLocationQuery || 'Selected Location';
+  } else if (usingManualLocation) {
+    try {
+      const candidates = await searchLocationsByName(selectedLocationQuery);
+      if (candidates.length === 0) {
+        throw new Error('Location not found');
+      }
+
+      const manual = candidates[0];
+      lat = manual.lat;
+      lon = manual.lon;
+      city = manual.city;
+    } catch (_) {
+      card.innerHTML = `<p style="color:#ef4444;">Could not find that location. Try a city name like "Hyderabad" or "London".</p>`;
+      return;
+    }
+  }
 
   // Try browser geolocation (optional — skip if denied)
-  try {
-    const pos = await new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error('no geo'));
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000 });
-    });
-    lat = pos.coords.latitude;
-    lon = pos.coords.longitude;
-    // Reverse geocode for city name
+  if (!usingManualLocation) {
     try {
-      const geoRes = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      const geoData = await geoRes.json();
-      city = geoData.address?.city || geoData.address?.town || geoData.address?.village || 'Your Location';
-    } catch (_) {}
-  } catch (_) {
-    // Fallback: IP-based location
-    try {
-      const ipRes = await fetch('https://ipapi.co/json/');
-      const ipData = await ipRes.json();
-      lat = ipData.latitude; lon = ipData.longitude;
-      city = ipData.city || 'Your Location';
+      const pos = await new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error('no geo'));
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000 });
+      });
+      lat = pos.coords.latitude;
+      lon = pos.coords.longitude;
+      // Reverse geocode for city name
+      try {
+        const geoRes = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const geoData = await geoRes.json();
+        city = geoData.address?.city || geoData.address?.town || geoData.address?.village || 'Your Location';
+      } catch (_) {}
     } catch (_) {
-      // Last resort defaults
-      lat = 52.52; lon = 13.41; city = 'Berlin';
+      // Fallback: IP-based location
+      try {
+        const ipRes = await fetch('https://ipapi.co/json/');
+        const ipData = await ipRes.json();
+        lat = ipData.latitude; lon = ipData.longitude;
+        city = ipData.city || 'Your Location';
+      } catch (_) {
+        // Last resort defaults
+        lat = 52.52; lon = 13.41; city = 'Berlin';
+      }
     }
   }
 
   // Fetch real weather from Open-Meteo (free, no key)
   try {
     const wRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m&hourly=weather_code,precipitation_probability,precipitation,wind_speed_10m&forecast_days=2&timezone=auto&wind_speed_unit=mph`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m&forecast_days=7&timezone=auto&wind_speed_unit=mph`
     );
     const wData = await wRes.json();
-    const temp = Math.round(wData.current.temperature_2m);
-    const feelsLike = Math.round(wData.current.apparent_temperature);
-    const condition = getWeatherCondition(wData.current.weather_code);
-    const wind = Math.round(wData.current.wind_speed_10m);
-    const gust = Math.round(wData.current.wind_gusts_10m || wData.current.wind_speed_10m);
+    const forecastDate = selectedForecastDate || getTodayLocalDateString();
+    const todayStr = getTodayLocalDateString();
+    const useCurrent = forecastDate === todayStr;
+
+    const forecastRow = useCurrent ? null : findForecastSnapshotForDate(wData.hourly, forecastDate);
+
+    const baseTemp = useCurrent ? wData.current.temperature_2m : forecastRow?.temperature;
+    const baseFeels = useCurrent ? wData.current.apparent_temperature : forecastRow?.feelsLike;
+    const baseCode = useCurrent ? wData.current.weather_code : forecastRow?.code;
+    const baseWind = useCurrent ? wData.current.wind_speed_10m : forecastRow?.wind;
+    const baseGust = useCurrent ? (wData.current.wind_gusts_10m || wData.current.wind_speed_10m) : (forecastRow?.gust || forecastRow?.wind);
+
+    if (!Number.isFinite(baseTemp) || !Number.isFinite(baseFeels) || !Number.isFinite(baseWind) || !Number.isFinite(baseGust) || baseCode === undefined || baseCode === null) {
+      card.innerHTML = `<p style="color:#ef4444;">Forecast not available for the selected date. Choose another date.</p>`;
+      return;
+    }
+
+    const temp = Math.round(baseTemp);
+    const feelsLike = Math.round(baseFeels);
+    const condition = getWeatherCondition(baseCode);
+    const wind = Math.round(baseWind);
+    const gust = Math.round(baseGust);
     const icon = getWeatherIcon(condition);
     const occ = occasion ? occasion.value || 'Casual Day Out' : 'Casual Day Out';
     const outfitSuggestion = getOutfitForWeather(condition, temp, occ);
     const windSeverity = getWindSeverity(wind, gust);
-    const shortTerm = analyzeShortTermRainOutlook(wData.hourly, wData.current.time);
+    const shortTerm = analyzeShortTermRainOutlook(wData.hourly, wData.current.time, forecastDate);
     const scene = getWeatherScene(condition, temp, shortTerm);
 
     currentWeather = { temp, feelsLike, condition, city, shortTerm };
 
     // Update weather badge in outfit section
     const badge = document.getElementById('weatherBadge');
-    if (badge) badge.textContent = `${condition}, ${temp}°C`;
+    if (badge) badge.textContent = `${condition}, ${temp}°C (${formatShortDate(forecastDate)})`;
+
+    const inputValue = (selectedLocationQuery || city || '').replace(/"/g, '&quot;');
 
     card.innerHTML = `
       <div class="weather-main">
@@ -360,6 +512,14 @@ async function loadWeather() {
         </div>
         <button class="weather-locate-btn" onclick="loadWeather()" title="Refresh location">📍 Refresh</button>
       </div>
+      <div class="weather-location-tools">
+        <input id="manualLocationInput" class="weather-location-input" type="text" value="${inputValue}" placeholder="Enter city/location (e.g., Hyderabad)">
+        <input id="forecastDateInput" class="weather-date-input" type="date" value="${forecastDate}" min="${todayStr}">
+        <button class="weather-locate-btn" onclick="applyManualLocation()" title="Use typed location">Use Location</button>
+        <button class="weather-locate-btn" onclick="applyForecastDate()" title="Use selected date">Use Date</button>
+        <button class="weather-locate-btn" onclick="clearManualLocation()" title="Switch back to automatic location">Use My Location</button>
+      </div>
+      <div id="locationDisambiguation" class="weather-location-choices" hidden></div>
       <div class="weather-scene ${scene.themeClass}">
         <div class="weather-scene-main" aria-hidden="true">${scene.mainEmoji}</div>
         <div class="weather-scene-content">
@@ -377,6 +537,82 @@ async function loadWeather() {
   } catch (e) {
     card.innerHTML = `<p style="color:#ef4444;">Could not load weather data. Check your connection.</p>`;
   }
+}
+
+function applyForecastDate() {
+  const input = document.getElementById('forecastDateInput');
+  if (!input || !input.value) {
+    alert('Please choose a date.');
+    return;
+  }
+
+  selectedForecastDate = input.value;
+  loadWeather();
+}
+
+function renderLocationDisambiguation(candidates) {
+  const wrapper = document.getElementById('locationDisambiguation');
+  if (!wrapper) return;
+
+  if (!candidates || candidates.length <= 1) {
+    wrapper.hidden = true;
+    wrapper.innerHTML = '';
+    return;
+  }
+
+  const options = candidates
+    .map((c, i) => `<option value="${i}">${c.city}</option>`)
+    .join('');
+
+  wrapper.hidden = false;
+  wrapper.innerHTML = `
+    <p class="weather-location-hint">Multiple matches found. Choose one:</p>
+    <div class="weather-location-choice-row">
+      <select id="manualLocationSelect" class="weather-location-select">${options}</select>
+      <button class="weather-locate-btn" onclick="chooseManualLocationFromList()">Use Selected</button>
+    </div>
+  `;
+}
+
+async function applyManualLocation() {
+  const input = document.getElementById('manualLocationInput');
+  const query = input ? input.value.trim() : '';
+  if (!query) {
+    alert('Please enter a city or location.');
+    return;
+  }
+
+  const candidates = await searchLocationsByName(query);
+  if (candidates.length === 0) {
+    alert('Location not found. Try a different city or add country name.');
+    return;
+  }
+
+  manualLocationCandidates = candidates;
+
+  if (candidates.length === 1) {
+    const chosen = candidates[0];
+    loadWeather({ lat: chosen.lat, lon: chosen.lon, city: chosen.city });
+    return;
+  }
+
+  renderLocationDisambiguation(candidates);
+}
+
+function chooseManualLocationFromList() {
+  const select = document.getElementById('manualLocationSelect');
+  if (!select) return;
+
+  const idx = Number(select.value);
+  const chosen = manualLocationCandidates[idx];
+  if (!chosen) return;
+
+  loadWeather({ lat: chosen.lat, lon: chosen.lon, city: chosen.city });
+}
+
+function clearManualLocation() {
+  manualLocationCandidates = [];
+  loadWeather(null);
 }
 
 // Reload outfit suggestion when occasion changes
