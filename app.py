@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-﻿from flask import Flask, render_template
-
-app = Flask(
-    __name__,
-    template_folder="docs/Architecture/templates",
-    static_folder="docs/Architecture/static",
-    static_url_path="/static",
-)
-
-@app.route("/")
-def home():
-    return render_template("homepage.html")
-
-@app.route("/favicon.ico")
-def favicon():
-    return app.send_static_file("favicon.ico")
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
-=======
-
 from flask import Flask, render_template, session, redirect, url_for, request
 from flask_cors import CORS
 from flask_session import Session
@@ -84,7 +62,7 @@ except ImportError as e:
     spec.loader.exec_module(auth_module)
     auth = auth_module.auth
 
-# ✅ Register blueprint here
+# Register blueprint here
 app.register_blueprint(auth)
 
 
@@ -100,21 +78,26 @@ def _no_store(response):
     response.headers['Expires'] = '0'
     return response
 
+
 @app.route('/')
 def home():
     return render_template('homepage.html')
+
 
 @app.route('/login')
 def login():
     return render_template('login.html')
 
+
 @app.route('/register')
 def register():
     return render_template('register.html')
 
+
 @app.route('/reset-password')
 def reset_password():
     return render_template('reset_password.html')
+
 
 @app.route('/profile-setup')
 def profile_setup():
@@ -145,12 +128,11 @@ def add_security_headers(response):
         return _no_store(response)
     return response
 
-# ✅ CORRECT LINE
+
 if __name__ == '__main__':
     # Create database tables
     with app.app_context():
         db.create_all()
-        print("✓ Database initialized successfully!")
-    
+        print("Database initialized successfully!")
+
     app.run(debug=True, port=5000)
->>>>>>> 6222f5d9828cd2235a5036351a09df71c8ae7f7b
