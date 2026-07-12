@@ -11,6 +11,10 @@ class UserNotFoundError(Exception):
     pass
 
 
+class TaskNotOwnedByUserError(Exception):
+    pass
+
+
 class TaskService:
     def __init__(self, tasks: TaskRepository, users: UserRepository):
         self._tasks = tasks
@@ -29,12 +33,19 @@ class TaskService:
 
         return self._tasks.add(title, current_user.id)
 
-    def delete_task(self, task_id: int):
-        return self._tasks.remove(task_id)
-
-    def get_task(self, task_id: int):
+    def delete_task(self, task_id: int, current_user: User):
         task = self._tasks.find(task_id)
         if task is None:
             raise TaskNotFoundError(task_id)
+        if task.owner_id != current_user.id:
+            raise TaskNotOwnedByUserError(task_id)
+        return self._tasks.remove(task_id)
+
+    def get_task(self, task_id: int, current_user: User):
+        task = self._tasks.find(task_id)
+        if task is None:
+            raise TaskNotFoundError(task_id)
+        if task.owner_id != current_user.id:
+            raise TaskNotOwnedByUserError(task_id)
         return task
     

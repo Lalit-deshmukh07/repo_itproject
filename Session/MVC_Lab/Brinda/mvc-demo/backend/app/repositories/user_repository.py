@@ -15,10 +15,10 @@ class UserRepository:
         return self._db.get(User, user_id)
     
     def find_by_name(self, name: str) -> Optional[User]:
-        return self._db.scalars(select(User).where(User.username == name)).first()
+        return self._db.scalars(select(User).where(User.name == name)).first()
 
-    def add(self , username: str, password_hash: str) -> User:
-        user = User(username=username, password_hash=password_hash)
+    def add(self , name: str, password_hash: str) -> User:
+        user = User(name=name, password_hash=password_hash)
         self._db.add(user)
         self._db.commit()
         self._db.refresh(user)

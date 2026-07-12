@@ -28,8 +28,8 @@ def db_session():
         db.close()
         engine.dispose()
  
-def _seed_user(db, username: str, password_hash: str) -> User:
-    user = User(username=username, password_hash=password_hash)
+def _seed_user(db, name: str, password_hash: str) -> User:
+    user = User(name=name, password_hash=password_hash)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -38,12 +38,12 @@ def _seed_user(db, username: str, password_hash: str) -> User:
 @pytest.fixture
 def alice(db_session):
     
-    return _seed_user(db_session, username="Alice", password_hash="password123")
+    return _seed_user(db_session, name="Alice", password_hash="password123")
  
 @pytest.fixture
 def bob(db_session):
     
-    return _seed_user(db_session, username="Bob", password_hash="password123")
+    return _seed_user(db_session, name="Bob", password_hash="password123")
  
 @pytest.fixture
 def client(db_session, alice):

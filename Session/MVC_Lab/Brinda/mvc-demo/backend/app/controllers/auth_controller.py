@@ -17,14 +17,14 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
  
 class RegisterRequest(BaseModel):
-    username: str
+    name: str
     password: str
  
 @router.post("/register", response_model=UserSchema, status_code=201)
 def register(payload: RegisterRequest, repo: UserRepository = Depends(get_user_repo)):
-    if repo.find_by_name(payload.username):
-        raise HTTPException(status_code=409, detail="Username taken")
-    user = repo.add(payload.username, hash_password(payload.password))
+    if repo.find_by_name(payload.name):
+        raise HTTPException(status_code=409, detail="Name taken")
+    user = repo.add(payload.name, hash_password(payload.password))
     return user
  
 @router.post("/login", response_model=TokenResponse)

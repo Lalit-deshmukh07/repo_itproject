@@ -68,6 +68,15 @@ docker compose up --build
 
 The app will be available at `http://localhost:3000`.
 
+### Run with Flask
+
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+Then open `http://127.0.0.1:5000` in your browser.
+
 ## Repository Structure
 
 ```

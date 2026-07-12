@@ -206,9 +206,7 @@ def get_saved_outfits():
 @auth.route('/api/auth/logout', methods=['POST'])
 def logout():
     """Logout user"""
-    session.pop('user_id', None)
-    session.pop('user_email', None)
-    session.pop('user_name', None)
+    session.clear()
     
     return jsonify({
         "message": "Logged out successfully"
