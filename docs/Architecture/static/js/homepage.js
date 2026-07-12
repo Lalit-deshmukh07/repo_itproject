@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+﻿window.addEventListener("DOMContentLoaded", function () {
+  console.log("WearItRight homepage loaded successfully.");
+=======
 // INTERACTIVE OUTFIT RECOMMENDATION DEMO
 // Builds a frontend wardrobe and recommends an outfit from selected categories.
 
@@ -213,4 +217,5 @@ document.addEventListener("keydown", function (event) {
   if (event.key === "Escape" && !loginModal.hidden) {
     closeLoginModal();
   }
+>>>>>>> 6222f5d9828cd2235a5036351a09df71c8ae7f7b
 });
