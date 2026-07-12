@@ -8,7 +8,7 @@ class FakeTaskRepository:
         self._tasks: list[Task] = []
         self._next_id: int = 1
  
-    def all_for_users(self, owner_id: int) -> list[Task]:
+    def all_for_user(self, owner_id: int) -> list[Task]:
         return [task for task in self._tasks if task.owner_id == owner_id]
    
     def find(self, task_id: int) -> Task | None:

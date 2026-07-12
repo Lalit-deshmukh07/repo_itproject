@@ -23,8 +23,8 @@ def seed_users():
     if db.scalars(select(User)).first() is not None:
       return 
     db.add_all([
-        User(username="alice", password_hash=hash_password("password123")),
-        User(username="bob", password_hash=hash_password("password456")),
+        User(name="alice", password_hash=hash_password("password123")),
+        User(name="bob", password_hash=hash_password("password456")),
     ])
     db.commit()
 seed_users() # call at module load

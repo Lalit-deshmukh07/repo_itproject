@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Session Report</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  </head>
+  <body>
+    <header>
+      <h1>{{ title }}</h1>
+      <p>Session report content from the repository.</p>
+      <p><a href="{{ url_for('sessions') }}">Back to all session reports</a></p>
+      <p><a href="{{ url_for('home') }}">Back to home</a></p>
+    </header>
+    <main>
+      <article>
+        <div style="white-space: pre-wrap; line-height: 1.5; font-family: Arial, sans-serif;">
+          {{ content | safe }}
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

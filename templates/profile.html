@@ -38,7 +38,10 @@
 
     <!-- RECOMMENDATIONS SECTION -->
     <section id="recommendations" class="recommendations-section">
-      <h2>✨ Recommendations for You</h2>
+      <div class="section-header-row">
+        <h2>✨ Recommendations for You</h2>
+        <a href="{{ url_for('recommendations') }}" class="see-all-btn">See All &rarr;</a>
+      </div>
       <div id="recommendationsContainer" class="recommendations-grid">
         <p>Loading recommendations...</p>
       </div>

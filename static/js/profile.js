@@ -121,9 +121,49 @@ async function loadWardrobe() {
         });
 
         const icon = occasionIcons[outfit.occasion] || occasionIcons['default'];
+        const outerwearLabel = outfit.items?.outerwear || '—';
         const topLabel = outfit.items?.top || '—';
         const bottomLabel = outfit.items?.bottom || '—';
         const shoesLabel = outfit.items?.shoes || '—';
+
+        // Build item rows dynamically
+        let itemsRows = '';
+        if (outerwearLabel !== '—') {
+          itemsRows += `
+            <div class="outfit-item-row">
+              <span class="item-icon">🧥</span>
+              <div class="item-detail">
+                <span class="item-label">Outerwear</span>
+                <span class="item-name">${outerwearLabel}</span>
+              </div>
+            </div>`;
+        }
+        itemsRows += `
+            <div class="outfit-item-row">
+              <span class="item-icon">👕</span>
+              <div class="item-detail">
+                <span class="item-label">Top / Dress</span>
+                <span class="item-name">${topLabel}</span>
+              </div>
+            </div>`;
+        if (bottomLabel !== '—') {
+          itemsRows += `
+            <div class="outfit-item-row">
+              <span class="item-icon">👖</span>
+              <div class="item-detail">
+                <span class="item-label">Bottom</span>
+                <span class="item-name">${bottomLabel}</span>
+              </div>
+            </div>`;
+        }
+        itemsRows += `
+            <div class="outfit-item-row">
+              <span class="item-icon">👞</span>
+              <div class="item-detail">
+                <span class="item-label">Shoes</span>
+                <span class="item-name">${shoesLabel}</span>
+              </div>
+            </div>`;
 
         card.innerHTML = `
           <div class="outfit-card-header">
@@ -132,27 +172,7 @@ async function loadWardrobe() {
             <span class="weather-tag">🌤️ ${outfit.weather || 'Any weather'}</span>
           </div>
           <div class="outfit-items-list">
-            <div class="outfit-item-row">
-              <span class="item-icon">👕</span>
-              <div class="item-detail">
-                <span class="item-label">Top / Dress</span>
-                <span class="item-name">${topLabel}</span>
-              </div>
-            </div>
-            <div class="outfit-item-row">
-              <span class="item-icon">👖</span>
-              <div class="item-detail">
-                <span class="item-label">Bottom</span>
-                <span class="item-name">${bottomLabel}</span>
-              </div>
-            </div>
-            <div class="outfit-item-row">
-              <span class="item-icon">👞</span>
-              <div class="item-detail">
-                <span class="item-label">Shoes</span>
-                <span class="item-name">${shoesLabel}</span>
-              </div>
-            </div>
+            ${itemsRows}
           </div>
           <div class="outfit-card-footer">
             <p class="outfit-note">${outfit.aiNote || 'Saved outfit'}</p>

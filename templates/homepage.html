@@ -115,23 +115,12 @@
     <!-- TOPS UPLOAD -->
     <div class="upload-category">
       <h3>👕 Tops</h3>
-      <p>Shirts, jackets, hoodies, blazers</p>
+      <p>Shirts, t-shirts, blouses</p>
       <div class="upload-input-wrapper">
         <input type="file" id="topsUpload" multiple accept="image/*" class="category-upload">
         <label for="topsUpload" class="upload-label">+ Add Tops</label>
       </div>
       <div id="topsList" class="file-list"></div>
-    </div>
-
-    <!-- BOTTOMS UPLOAD -->
-    <div class="upload-category">
-      <h3>👖 Bottoms</h3>
-      <p>Pants, jeans, skirts, shorts</p>
-      <div class="upload-input-wrapper">
-        <input type="file" id="bottomsUpload" multiple accept="image/*" class="category-upload">
-        <label for="bottomsUpload" class="upload-label">+ Add Bottoms</label>
-      </div>
-      <div id="bottomsList" class="file-list"></div>
     </div>
 
     <!-- DRESSES UPLOAD -->
@@ -145,6 +134,17 @@
       <div id="dressesList" class="file-list"></div>
     </div>
 
+    <!-- BOTTOMS UPLOAD -->
+    <div class="upload-category">
+      <h3>👖 Bottoms <span class="optional-tag">optional</span></h3>
+      <p>Pants, jeans, skirts, shorts</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="bottomsUpload" multiple accept="image/*" class="category-upload">
+        <label for="bottomsUpload" class="upload-label">+ Add Bottoms</label>
+      </div>
+      <div id="bottomsList" class="file-list"></div>
+    </div>
+
     <!-- SHOES UPLOAD -->
     <div class="upload-category">
       <h3>👞 Shoes</h3>
@@ -155,18 +155,49 @@
       </div>
       <div id="shoesList" class="file-list"></div>
     </div>
+
+    <!-- OUTERWEAR UPLOAD -->
+    <div class="upload-category">
+      <h3>🧥 Outerwear <span class="optional-tag">optional</span></h3>
+      <p>Jackets, hoodies, coats, cardigans</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="outerwearUpload" multiple accept="image/*" class="category-upload">
+        <label for="outerwearUpload" class="upload-label">+ Add Outerwear</label>
+      </div>
+      <div id="outerwearList" class="file-list"></div>
+    </div>
   </div>
 
   <div class="upload-box">
-    <select id="occasion">
-      <option value="">Select occasion</option>
-      <option>College</option>
-      <option>Office</option>
-      <option>Party</option>
-      <option>Casual Day Out</option>
-    </select>
-
-    <button id="generateBtn">Generate Outfit</button>
+    <div class="upload-controls">
+      <div class="upload-control-group">
+        <label class="control-label">Occasion</label>
+        <select id="occasion">
+          <option value="">Select occasion</option>
+          <option>College</option>
+          <option>Office</option>
+          <option>Party</option>
+          <option>Casual Day Out</option>
+        </select>
+      </div>
+      <div class="upload-control-group">
+        <label class="control-label">Style vibe <span class="optional-tag">optional</span></label>
+        <select id="styleVibe">
+          <option value="">Any vibe</option>
+          <option value="casual">Casual 👕</option>
+          <option value="funky">Funky 🎨</option>
+          <option value="preppy">Preppy 🎓</option>
+          <option value="elegant">Elegant ✨</option>
+          <option value="sporty">Sporty ⚡</option>
+          <option value="minimalist">Minimalist ⬜</option>
+          <option value="bohemian">Bohemian 🌸</option>
+          <option value="edgy">Edgy 🖤</option>
+          <option value="romantic">Romantic 💕</option>
+          <option value="vintage">Vintage 🎭</option>
+        </select>
+      </div>
+    </div>
+    <button id="generateBtn">✨ Generate Outfit Options</button>
   </div>
 </section>
 

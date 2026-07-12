@@ -7,7 +7,7 @@ from app.models import User
 from app.repositories.task_repository import TaskRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas import Task, TaskCreate
-from app.services.task_services import TaskService, TaskNotFoundError, UserNotFoundError
+from app.services.task_services import TaskService, TaskNotFoundError, UserNotFoundError, TaskNotOwnedByUserError
 
 router = APIRouter()
 
@@ -28,11 +28,13 @@ def list_tasks(
     return service.list_tasks(user)
  
 @router.get("/{task_id}", response_model=Task)
-def get_task(task_id: int, service: TaskService = Depends(get_task_service)):
+def get_task(task_id: int, user: User = Depends(get_current_user), service: TaskService = Depends(get_task_service)):
     try:
-        return service.get_task(task_id)
+        return service.get_task(task_id, user)
     except TaskNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Task not found!") from exc
+    except TaskNotOwnedByUserError as exc:
+        raise HTTPException(status_code=403, detail="Access denied") from exc
  
 @router.post("/", response_model=Task, status_code=201)
 def create_task(
@@ -48,6 +50,10 @@ def create_task(
         raise HTTPException(status_code=404, detail="User not found") from exc
  
 @router.delete("/{task_id}", status_code=204)
-def delete_task(task_id: int, service: TaskService = Depends(get_task_service)):
-    if not service.delete_task(task_id):
-        raise HTTPException(status_code=404, detail="Task not found!")
+def delete_task(task_id: int, user: User = Depends(get_current_user), service: TaskService = Depends(get_task_service)):
+    try:
+        service.delete_task(task_id, user)
+    except TaskNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Task not found!") from exc
+    except TaskNotOwnedByUserError as exc:
+        raise HTTPException(status_code=403, detail="Access denied") from exc
