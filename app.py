@@ -27,7 +27,6 @@ from database.models import db
 
 # Create Flask app with explicit template and static folders
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DB_PATH, "wearitright.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -131,4 +130,4 @@ if __name__ == '__main__':
         db.create_all()
         print("✓ Database initialized successfully!")
     
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
