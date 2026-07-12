@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-﻿Flask>=3.0,<4.0
-=======
-Flask==2.3.3
+Flask>=3.0,<4.0
 flask-cors==4.0.0
 python-dotenv==1.0.0
 Flask-SQLAlchemy==3.0.5
-Werkzeug==2.3.7
+Werkzeug>=3.0,<4.0
 Flask-Session==0.8.0
->>>>>>> 6222f5d9828cd2235a5036351a09df71c8ae7f7b
