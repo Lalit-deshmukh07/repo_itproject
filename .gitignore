@@ -37,3 +37,7 @@ Thumbs.db
 
 # OS
 .DS_Store
+
+# Runtime app data
+instance/wearitright.db
+instance/sessions/

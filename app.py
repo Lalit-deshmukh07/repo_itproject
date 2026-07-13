@@ -1,10 +1,9 @@
-﻿from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_cors import CORS
 from flask_session import Session
 import os
 import sys
 
-# Get absolute paths to ensure consistency across machines
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(BASE_DIR, 'src')
 TEMPLATE_DIR = os.path.join(SRC_DIR, 'main', 'templates')
@@ -15,11 +14,9 @@ SESSION_PATH = os.path.join(DB_PATH, 'sessions')
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# Create directories if they don't exist
 os.makedirs(DB_PATH, exist_ok=True)
 os.makedirs(SESSION_PATH, exist_ok=True)
 
-# Import database
 from src.common.models import db
 from src.auth.routes import auth
 
@@ -28,24 +25,20 @@ def create_app():
     """Create and configure the Flask application."""
     app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
-    # Configure database
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DB_PATH, "wearitright.db")}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Initialize database
     db.init_app(app)
 
-    # Configure session for persistent storage
     app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SESSION_FILE_DIR'] = SESSION_PATH
     app.config['SESSION_PERMANENT'] = True
-    app.config['PERMANENT_SESSION_LIFETIME'] = 7 * 24 * 60 * 60  # 7 days
-    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+    app.config['PERMANENT_SESSION_LIFETIME'] = 7 * 24 * 60 * 60
+    app.config['SESSION_COOKIE_SECURE'] = False
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-    # Initialize Flask-Session
     Session(app)
     CORS(app)
 
@@ -97,12 +90,10 @@ def create_app():
 
 
 def _is_authenticated():
-    """Return True if a user is logged in via session."""
     return bool(session.get('user_id'))
 
 
 def _no_store(response):
-    """Prevent sensitive pages from being cached by browser/proxies."""
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -115,7 +106,7 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("✓ Database initialized successfully!")
+        print('✓ Database initialized successfully!')
 
     app.run(debug=True, host='0.0.0.0', port=5001)
 
