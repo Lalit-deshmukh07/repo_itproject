@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from database.models import db, User, Outfit
-from datetime import datetime, timedelta
+from src.common.models import db, User, Outfit
 
 auth = Blueprint('auth', __name__)
 
