@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WearItRight</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <h1>WearItRight</h1>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">&#9776;</button>
+    <ul id="navbarMenu">
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="#wardrobe">Wardrobe</a></li>
+      <li><a href="#outfits">Recommendations</a></li>
+      <li><a class="login-btn" href="{{ url_for('login') }}">Login</a></li>
+      <li><a class="register-btn" href="{{ url_for('register') }}">Register</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+
+    <div class="hero-text">
+      <h2>Smart Outfit Suggestions Based on Weather & Occasion</h2>
+
+      <p>
+        Upload your wardrobe and get AI-powered outfit recommendations instantly.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn-primary" href="#wardrobe">Upload &amp; Generate</a>
+        <a class="btn-secondary" id="heroSecondaryBtn" href="{{ url_for('register') }}">Create Account</a>
+      </div>
+    </div>
+
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop">
+    </div>
+
+  </section>
+<section class="features">
+
+  <h2>Why Choose WearItRight?</h2>
+
+  <div class="feature-container">
+
+    <div class="feature-card">
+      <h3>AI Recommendations</h3>
+      <p>Get outfit suggestions based on weather and occasion.</p>
+    </div>
+
+    <div class="feature-card">
+      <h3>Virtual Wardrobe</h3>
+      <p>Upload and manage your clothes digitally.</p>
+    </div>
+
+    <div class="feature-card">
+      <h3>Weather Smart</h3>
+      <p>Smart outfit planning for rain, winter, and summer.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="outfits" class="outfits">
+
+  <h2>Trending Outfit Suggestions</h2>
+
+  <div class="outfit-container">
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/stylish-young-man-poses-confidently-600nw-2597050177.jpg') }}" alt="College Casual">
+
+      <h3>College Casual</h3>
+
+      <p>White Hoodie • Jeans • Sneakers</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/aline-kaplan-zara-blazer-trousers-mango-waistcoat-lobus-bag-news-photo-1692315065.avif') }}" alt="Office Ready">
+
+      <h3>Office Ready</h3>
+
+      <p>Blazer • Formal Pants • Loafers</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+    <div class="outfit-card">
+      <img src="{{ url_for('static', filename='images/1_5qjaFhlD5AX6--c7CMggVA.jpg') }}" alt="Winter Street Style">
+
+      <h3>Winter Street Style</h3>
+
+      <p>Puffer Jacket • Boots • Beanie</p>
+
+      <button>Try Outfit</button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- WARDROBE UPLOAD AND OCCASION SELECTION -->
+<!-- Allows the user to upload clothing images by category and choose an occasion before generating an outfit. -->
+<section id="wardrobe" class="upload-section">
+  <h2>Upload Your Wardrobe by Category</h2>
+  <p>Upload clothing images in each category for personalized outfit recommendations.</p>
+
+  <div class="upload-categories">
+    <!-- TOPS UPLOAD -->
+    <div class="upload-category">
+      <h3>👕 Tops</h3>
+      <p>Shirts, t-shirts, blouses</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="topsUpload" multiple accept="image/*" class="category-upload">
+        <label for="topsUpload" class="upload-label">+ Add Tops</label>
+      </div>
+      <div id="topsList" class="file-list"></div>
+    </div>
+
+    <!-- DRESSES UPLOAD -->
+    <div class="upload-category">
+      <h3>👗 Dresses</h3>
+      <p>Full dresses and jumpsuits</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="dressesUpload" multiple accept="image/*" class="category-upload">
+        <label for="dressesUpload" class="upload-label">+ Add Dresses</label>
+      </div>
+      <div id="dressesList" class="file-list"></div>
+    </div>
+
+    <!-- BOTTOMS UPLOAD -->
+    <div class="upload-category">
+      <h3>👖 Bottoms <span class="optional-tag">optional</span></h3>
+      <p>Pants, jeans, skirts, shorts</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="bottomsUpload" multiple accept="image/*" class="category-upload">
+        <label for="bottomsUpload" class="upload-label">+ Add Bottoms</label>
+      </div>
+      <div id="bottomsList" class="file-list"></div>
+    </div>
+
+    <!-- SHOES UPLOAD -->
+    <div class="upload-category">
+      <h3>👞 Shoes</h3>
+      <p>Sneakers, boots, heels, sandals</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="shoesUpload" multiple accept="image/*" class="category-upload">
+        <label for="shoesUpload" class="upload-label">+ Add Shoes</label>
+      </div>
+      <div id="shoesList" class="file-list"></div>
+    </div>
+
+    <!-- OUTERWEAR UPLOAD -->
+    <div class="upload-category">
+      <h3>🧥 Outerwear <span class="optional-tag">optional</span></h3>
+      <p>Jackets, hoodies, coats, cardigans</p>
+      <div class="upload-input-wrapper">
+        <input type="file" id="outerwearUpload" multiple accept="image/*" class="category-upload">
+        <label for="outerwearUpload" class="upload-label">+ Add Outerwear</label>
+      </div>
+      <div id="outerwearList" class="file-list"></div>
+    </div>
+  </div>
+
+  <div class="upload-box">
+    <div class="upload-controls">
+      <div class="upload-control-group">
+        <label class="control-label">Occasion</label>
+        <select id="occasion">
+          <option value="">Select occasion</option>
+          <option>College</option>
+          <option>Office</option>
+          <option>Party</option>
+          <option>Casual Day Out</option>
+        </select>
+      </div>
+      <div class="upload-control-group">
+        <label class="control-label">Style vibe <span class="optional-tag">optional</span></label>
+        <select id="styleVibe">
+          <option value="">Any vibe</option>
+          <option value="casual">Casual 👕</option>
+          <option value="funky">Funky 🎨</option>
+          <option value="preppy">Preppy 🎓</option>
+          <option value="elegant">Elegant ✨</option>
+          <option value="sporty">Sporty ⚡</option>
+          <option value="minimalist">Minimalist ⬜</option>
+          <option value="bohemian">Bohemian 🌸</option>
+          <option value="edgy">Edgy 🖤</option>
+          <option value="romantic">Romantic 💕</option>
+          <option value="vintage">Vintage 🎭</option>
+        </select>
+      </div>
+    </div>
+    <button id="generateBtn">✨ Generate Outfit Options</button>
+  </div>
+</section>
+
+<!-- AI RECOMMENDED OUTFIT DISPLAY -->
+<!-- Displays multiple outfit combinations the user can choose from. -->
+
+<section id="recommendations" class="recommended-outfit" hidden>
+  <div class="recommendation-header">
+    <div>
+      <p class="section-label">AI Styling Results</p>
+      <h2>Choose Your Outfit — <span id="selectedOccasion">College</span></h2>
+    </div>
+    <span class="match-score" id="weatherBadge">Cloudy, 18°C</span>
+  </div>
+
+  <!-- 3 outfit option cards generated dynamically -->
+  <div id="outfitOptionsGrid" class="outfit-options-grid"></div>
+
+  <div class="generate-more-bar">
+    <button id="generateMoreBtn" class="generate-more-btn">🔄 Generate More Options</button>
+  </div>
+</section>
+
+
+
+<section class="weather-section">
+
+  <h2>Today's Weather</h2>
+
+  <div class="weather-card" id="weatherCard">
+    <div class="weather-loading">📍 Detecting your location&hellip;</div>
+  </div>
+
+</section>
+
+<footer class="footer">
+
+  <h2>WearItRight</h2>
+
+  <p>
+    AI-powered smart wardrobe and outfit recommendation platform.
+  </p>
+
+  <p class="copyright">
+    © 2026 WearItRight. All rights reserved.
+  </p>
+
+</footer>
+
+
+<section class="signin-section" id="signinSection">
+  <div class="signin-card">
+    <div class="signin-copy">
+      <h2>Ready to build your wardrobe?</h2>
+      <p>Sign in or register to save your outfits, upload clothes, and get smart recommendations.</p>
+    </div>
+    <div class="signin-actions">
+      <a class="btn-primary" href="{{ url_for('login') }}">Sign In</a>
+      <a class="btn-secondary" href="{{ url_for('register') }}">Create account</a>
+    </div>
+  </div>
+</section>
+
+<script>
+// Hamburger menu toggle
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('navbarMenu').classList.toggle('open');
+});
+
+// Close menu when a nav link is clicked (mobile)
+document.querySelectorAll('#navbarMenu a, #navbarMenu button').forEach(el => {
+  el.addEventListener('click', () => document.getElementById('navbarMenu').classList.remove('open'));
+});
+
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST' })
+    .then(() => { window.location.href = '/login'; })
+    .catch(err => console.error('Logout error:', err));
+}
+
+// Update page based on authentication status
+async function updateAuthUI() {
+  try {
+    const response = await fetch('/api/auth/status');
+    const data = await response.json();
+    const navMenu = document.getElementById('navbarMenu');
+
+    if (data.authenticated && data.user) {
+      // Logged in — update navbar
+      navMenu.innerHTML = `
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+        <li><a href="#wardrobe">Upload</a></li>
+        <li><a href="#outfits">Trending</a></li>
+        <li class="nav-user">👤 ${data.user.name}</li>
+        <li><button onclick="logout()" class="nav-logout-btn">Logout</button></li>
+      `;
+
+      // Hide sign-in section
+      const signinSection = document.getElementById('signinSection');
+      if (signinSection) signinSection.style.display = 'none';
+
+      // Update hero secondary button
+      const heroBtn = document.getElementById('heroSecondaryBtn');
+      if (heroBtn) {
+        heroBtn.textContent = '👤 My Profile';
+        heroBtn.href = '{{ url_for("profile") }}';
+      }
+    }
+  } catch (error) {
+    console.log('Could not update auth UI:', error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+</script>
+
+<script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
+</body>
+</html>

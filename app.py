@@ -5,9 +5,10 @@ import os
 import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.join(BASE_DIR, 'src')
-TEMPLATE_DIR = os.path.join(SRC_DIR, 'main', 'templates')
-STATIC_DIR = os.path.join(SRC_DIR, 'main', 'static')
+BACKEND_DIR = os.path.join(BASE_DIR, 'backend')
+FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+TEMPLATE_DIR = os.path.join(FRONTEND_DIR, 'templates')
+STATIC_DIR = os.path.join(FRONTEND_DIR, 'assets')
 DB_PATH = os.path.join(BASE_DIR, 'instance')
 SESSION_PATH = os.path.join(DB_PATH, 'sessions')
 
@@ -17,8 +18,8 @@ if BASE_DIR not in sys.path:
 os.makedirs(DB_PATH, exist_ok=True)
 os.makedirs(SESSION_PATH, exist_ok=True)
 
-from src.common.models import db
-from src.auth.routes import auth
+from backend.models.models import db
+from backend.routes.auth import auth
 
 
 def create_app():
