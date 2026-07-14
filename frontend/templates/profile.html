@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Profile - WearItRight</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <h1>WearItRight</h1>
+    <ul>
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="#wardrobe">Wardrobe</a></li>
+      <li><a href="#recommendations">Recommendations</a></li>
+      <li><button id="logoutBtn" class="logout-btn">Logout</button></li>
+    </ul>
+  </nav>
+
+  <div class="profile-container">
+    <!-- PROFILE HEADER -->
+    <section class="profile-header">
+      <div class="profile-card">
+        <h1 id="userName">Welcome!</h1>
+        <div class="profile-info">
+          <p><strong>Email:</strong> <span id="userEmail"></span></p>
+          <p><strong>Gender:</strong> <span id="userGender">Not set</span></p>
+          <p><strong>Top Size:</strong> <span id="userTopSize">Not set</span></p>
+          <p><strong>Bottom Size:</strong> <span id="userBottomSize">Not set</span></p>
+        </div>
+        <div class="style-preferences">
+          <strong>Your Style Preferences:</strong>
+          <div id="stylesList" class="style-tags"></div>
+        </div>
+        <a href="/profile-setup" class="btn-edit">Edit Profile</a>
+      </div>
+    </section>
+
+    <!-- RECOMMENDATIONS SECTION -->
+    <section id="recommendations" class="recommendations-section">
+      <div class="section-header-row">
+        <h2>✨ Recommendations for You</h2>
+        <a href="{{ url_for('recommendations') }}" class="see-all-btn">See All &rarr;</a>
+      </div>
+      <div id="recommendationsContainer" class="recommendations-grid">
+        <p>Loading recommendations...</p>
+      </div>
+    </section>
+
+    <!-- WARDROBE SECTION -->
+    <section id="wardrobe" class="wardrobe-section">
+      <h2>👗 Your Wardrobe</h2>
+      <div class="wardrobe-header">
+        <p>Saved outfits based on your preferences</p>
+        <a href="{{ url_for('home') }}" class="btn-primary">+ Generate New Outfit</a>
+      </div>
+      
+      <div id="wardrobeContainer" class="wardrobe-grid">
+        <p>Loading your wardrobe...</p>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    <h2>WearItRight</h2>
+    <p>AI-powered smart wardrobe and outfit recommendation platform.</p>
+    <p class="copyright">© 2026 WearItRight. All rights reserved.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>

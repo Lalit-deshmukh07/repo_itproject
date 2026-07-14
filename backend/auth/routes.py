@@ -1,11 +1,10 @@
-from backend.auth.routes import auth
+from flask import Blueprint, jsonify, request, session
 
-__all__ = ['auth']
+from backend.common.models import Outfit, User, db
+
+auth = Blueprint('auth', __name__)
 
 
-# ---------------------------
-# REGISTER
-# ---------------------------
 @auth.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -31,41 +30,28 @@ def register():
     if consent not in [True, 'true', 'on', 'yes', '1']:
         return jsonify({"message": "You must accept the terms and privacy policy."}), 400
 
-    # Check if user already exists
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({"message": "User already exists"}), 400
 
-    # Create new user
-    new_user = User(
-        first_name=first_name,
-        last_name=last_name,
-        email=email
-    )
+    new_user = User(first_name=first_name, last_name=last_name, email=email)
     new_user.set_password(password)
 
     try:
         db.session.add(new_user)
         db.session.commit()
-        
-        # Automatically log in the user after registration
+
         session.permanent = True
         session['user_id'] = new_user.id
         session['user_email'] = new_user.email
         session['user_name'] = f"{new_user.first_name} {new_user.last_name}"
-        
-        return jsonify({
-            "message": "Registered successfully",
-            "user": new_user.to_dict()
-        }), 201
+
+        return jsonify({"message": "Registered successfully", "user": new_user.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Registration failed: {str(e)}"}), 500
 
 
-# ---------------------------
-# LOGIN
-# ---------------------------
 @auth.route('/api/auth/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -76,27 +62,19 @@ def login():
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
 
-    # Find user by email
     user = User.query.filter_by(email=email).first()
 
     if user and user.check_password(password):
-        # Set session as permanent for 7 days
         session.permanent = True
         session['user_id'] = user.id
         session['user_email'] = user.email
         session['user_name'] = f"{user.first_name} {user.last_name}"
-        
-        return jsonify({
-            "message": "Login successful",
-            "user": user.to_dict()
-        }), 200
+
+        return jsonify({"message": "Login successful", "user": user.to_dict()}), 200
 
     return jsonify({"message": "Invalid email or password"}), 401
 
 
-# ---------------------------
-# PASSWORD RESET
-# ---------------------------
 @auth.route('/api/auth/reset-request', methods=['POST'])
 def reset_request():
     data = request.get_json()
@@ -106,55 +84,36 @@ def reset_request():
 
     email = data.get("email")
 
-    return jsonify({
-        "message": f"Password reset link sent to {email}"
-    }), 200
+    return jsonify({"message": f"Password reset link sent to {email}"}), 200
 
 
-# ---------------------------
-# CHECK AUTH STATUS
-# ---------------------------
 @auth.route('/api/auth/status', methods=['GET'])
 def check_auth_status():
-    """Check if user is logged in"""
     user_id = session.get('user_id')
     user_email = session.get('user_email')
     user_name = session.get('user_name')
-    
+
     if user_id:
         return jsonify({
             "authenticated": True,
-            "user": {
-                "id": user_id,
-                "email": user_email,
-                "name": user_name
-            }
+            "user": {"id": user_id, "email": user_email, "name": user_name}
         }), 200
-    
-    return jsonify({
-        "authenticated": False,
-        "user": None
-    }), 200
+
+    return jsonify({"authenticated": False, "user": None}), 200
 
 
-# ---------------------------
-# SAVE OUTFIT
-# ---------------------------
 @auth.route('/api/outfit/save', methods=['POST'])
 def save_outfit():
-    """Save an outfit for logged-in user"""
     user_id = session.get('user_id')
-    
-    # Check if user is logged in
+
     if not user_id:
         return jsonify({"message": "User not authenticated. Please login first."}), 401
-    
+
     data = request.get_json()
-    
+
     if not data:
         return jsonify({"message": "No data received"}), 400
-    
-    # Create new outfit
+
     outfit = Outfit(
         user_id=user_id,
         occasion=data.get("occasion", ""),
@@ -164,107 +123,78 @@ def save_outfit():
         weather=data.get("weather", ""),
         ai_note=data.get("aiNote", "")
     )
-    
+
     try:
         db.session.add(outfit)
         db.session.commit()
-        
-        return jsonify({
-            "message": "Outfit saved successfully",
-            "outfit": outfit.to_dict()
-        }), 201
+
+        return jsonify({"message": "Outfit saved successfully", "outfit": outfit.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Failed to save outfit: {str(e)}"}), 500
 
 
-# ---------------------------
-# GET SAVED OUTFITS
-# ---------------------------
 @auth.route('/api/outfit/get-all', methods=['GET'])
 def get_saved_outfits():
-    """Get all saved outfits for logged-in user"""
     user_id = session.get('user_id')
-    
-    # Check if user is logged in
+
     if not user_id:
         return jsonify({"message": "User not authenticated. Please login first."}), 401
-    
+
     outfits = Outfit.query.filter_by(user_id=user_id).all()
-    
-    return jsonify({
-        "outfits": [outfit.to_dict() for outfit in outfits],
-        "totalOutfits": len(outfits)
-    }), 200
+
+    return jsonify({"outfits": [outfit.to_dict() for outfit in outfits], "totalOutfits": len(outfits)}), 200
 
 
-# ---------------------------
-# LOGOUT
-# ---------------------------
 @auth.route('/api/auth/logout', methods=['POST'])
 def logout():
-    """Logout user"""
     session.clear()
-    
-    return jsonify({
-        "message": "Logged out successfully"
-    }), 200
+    return jsonify({"message": "Logged out successfully"}), 200
 
 
-# ---------------------------
-# SAVE USER PREFERENCES
-# ---------------------------
 @auth.route('/api/user/preferences', methods=['POST'])
 def save_preferences():
-    """Save user preferences after profile setup"""
     user_id = session.get('user_id')
-    
+
     if not user_id:
         return jsonify({"message": "User not authenticated"}), 401
-    
+
     data = request.get_json()
-    
+
     if not data:
         return jsonify({"message": "No data received"}), 400
-    
+
     try:
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "User not found"}), 404
-        
+
         user.gender = data.get('gender')
         user.top_size = data.get('topSize')
         user.bottom_size = data.get('bottomSize')
         user.set_style_preferences(data.get('styles', []))
         user.set_exclusions(data.get('exclusions', []))
-        
+
         db.session.commit()
-        
-        return jsonify({
-            "message": "Preferences saved successfully",
-            "user": user.to_dict()
-        }), 200
+
+        return jsonify({"message": "Preferences saved successfully", "user": user.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Failed to save preferences: {str(e)}"}), 500
 
 
-# ---------------------------
-# GET USER PREFERENCES
-# ---------------------------
 @auth.route('/api/user/preferences', methods=['GET'])
 def get_preferences():
-    """Get user preferences"""
     user_id = session.get('user_id')
-    
+
     if not user_id:
         return jsonify({"message": "User not authenticated"}), 401
-    
+
     try:
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "User not found"}), 404
-        
+
         return jsonify({
             "preferences": {
                 "gender": user.gender,
@@ -278,27 +208,21 @@ def get_preferences():
         return jsonify({"message": f"Failed to fetch preferences: {str(e)}"}), 500
 
 
-# ---------------------------
-# GET RECOMMENDATIONS BASED ON STYLE
-# ---------------------------
 @auth.route('/api/recommendations', methods=['GET'])
 def get_recommendations():
-    """Get outfit recommendations based on user style preferences"""
     user_id = session.get('user_id')
-    
+
     if not user_id:
         return jsonify({"message": "User not authenticated"}), 401
-    
+
     try:
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "User not found"}), 404
-        
+
         styles = user.get_style_preferences()
-        
-        # Generate recommendations based on styles
         recommendations = []
-        
+
         style_recommendations = {
             'casual': [
                 {'title': 'Casual Comfort', 'description': 'Relaxed fit jeans, soft t-shirt, white sneakers', 'styles': ['casual'], 'image': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop'},
@@ -349,25 +273,18 @@ def get_recommendations():
                 {'title': 'Fashion Forward', 'description': 'Avant-garde silhouette, unexpected textures, bold colours', 'styles': ['experimental'], 'image': 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop'},
             ],
         }
-        
+
         for style in styles:
             if style in style_recommendations:
                 recommendations.extend(style_recommendations[style])
-        
-        return jsonify({
-            "recommendations": recommendations,
-            "userStyles": styles
-        }), 200
+
+        return jsonify({"recommendations": recommendations, "userStyles": styles}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch recommendations: {str(e)}"}), 500
 
 
-# ---------------------------
-# WEATHER-BASED OUTFIT SUGGESTIONS
-# ---------------------------
 @auth.route('/api/outfit/weather-suggestions', methods=['GET'])
 def weather_suggestions():
-    """Return outfit type suggestions based on weather + occasion + user style"""
     occasion = request.args.get('occasion', 'Casual Day Out')
     condition = request.args.get('condition', 'Clear')
     temp = int(request.args.get('temp', 18))
@@ -416,4 +333,3 @@ def weather_suggestions():
         'temp': temp,
         'suggestions': suggestions
     }), 200
-

@@ -80,13 +80,27 @@ Then open `http://127.0.0.1:5000` in your browser.
 ## Repository Structure
 
 ```
+├── app.py                  # App entry point
 ├── README.md
-├── .gitignore
-├── docs/
-│   └── vision.md            # Product vision, personas, user stories
-├── services/
-│   ├── service-a/           # First microservice
-│   └── service-b/           # Second microservice
+├── requirements.txt
+├── backend/                # Server-side Flask application
+│   ├── app.py              # Backend application factory
+│   ├── auth/               # Authentication routes and logic
+│   ├── common/             # Shared models and helpers
+│   ├── config/             # Database and app settings
+│   ├── controllers/        # Request handling layer
+│   ├── middleware/         # Security and request middleware
+│   ├── models/             # Backend model package exports
+│   ├── routes/             # Route package exports
+│   ├── services/           # Business logic services
+│   └── utils/              # Shared backend utilities
+├── frontend/               # Client-facing templates and static assets
+│   ├── templates/          # Flask HTML templates
+│   ├── static/             # CSS, JS and images
+│   ├── components/         # Reusable UI components (future additions)
+│   ├── pages/              # Page-level frontend organization
+│   └── services/           # Frontend API helpers (future additions)
+├── docs/                   # Product and architecture documentation
 └── docker-compose.yml
 ```
 

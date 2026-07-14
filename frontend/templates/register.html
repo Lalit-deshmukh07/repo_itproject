@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-sub">Join us today</p>
+
+      <form id="registerForm">
+        <p class="error-message" id="registerError" style="color:red; display:none;"></p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" placeholder="Jane" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Min. 8 characters" required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat password" required>
+        </div>
+
+        <div class="form-group consent-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="consent" required>
+            I agree to the <a href="#" class="link">Terms of Service</a> and
+            <a href="#" class="link">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary">Create account</button>
+      </form>
+
+      <p class="switch-link">Already have an account? <a href="/login" class="link">Sign in</a></p>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>
