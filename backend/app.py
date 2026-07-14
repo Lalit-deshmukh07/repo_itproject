@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from flask_cors import CORS
@@ -10,14 +11,14 @@ from backend.common.models import db
 from backend.config.settings import DB_PATH, SESSION_PATH
 from backend.middleware.security import add_security_headers
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
-FRONTEND_DIR = os.path.join(ROOT_DIR, 'frontend')
-TEMPLATE_DIR = os.path.join(FRONTEND_DIR, 'templates')
-STATIC_DIR = os.path.join(FRONTEND_DIR, 'static')
+ROOT_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = ROOT_DIR / 'frontend'
+TEMPLATE_DIR = FRONTEND_DIR / 'templates'
+STATIC_CANDIDATES = [FRONTEND_DIR / 'static', FRONTEND_DIR / 'assets']
+STATIC_DIR = next((path for path in STATIC_CANDIDATES if path.exists()), FRONTEND_DIR / 'static')
 
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 os.makedirs(DB_PATH, exist_ok=True)
 os.makedirs(SESSION_PATH, exist_ok=True)
@@ -25,16 +26,16 @@ os.makedirs(SESSION_PATH, exist_ok=True)
 
 def create_app():
     """Create and configure the Flask application."""
-    app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+    app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DB_PATH, "wearitright.db")}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH / "wearitright.db"}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
 
     app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['SESSION_FILE_DIR'] = SESSION_PATH
+    app.config['SESSION_FILE_DIR'] = str(SESSION_PATH)
     app.config['SESSION_PERMANENT'] = True
     app.config['PERMANENT_SESSION_LIFETIME'] = 7 * 24 * 60 * 60
     app.config['SESSION_COOKIE_SECURE'] = False
