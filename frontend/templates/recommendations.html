@@ -92,6 +92,18 @@
     .rec-card-body {
       padding: 18px;
     }
+    .rec-score {
+      display: inline-flex;
+      margin-top: 6px;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
     .rec-style-tag {
       display: inline-block;
       background: #eef2ff;
@@ -434,11 +446,12 @@
       card.className = 'rec-card';
       card.dataset.style = styleKey;
       card.innerHTML = `
-        <img src="${rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'}"
+        <img src="${rec.modelImage || rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'}"
              alt="${rec.title}" class="rec-card-img"
              onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'">
         <div class="rec-card-body">
           <span class="rec-style-tag">${styleKey}</span>
+          <div class="rec-score">${rec.matchPercentage ? `Match ${rec.matchPercentage}%` : 'Match not scored'}</div>
           <h3>${rec.title}</h3>
           <p>${rec.description}</p>
           <button class="view-looks-btn" onclick="openGallery(${idx})">👁 View Outfit Looks</button>

@@ -1,9 +1,49 @@
 import random
+import urllib.request
+from typing import Dict, List, Optional
 from flask import Blueprint, jsonify, request, session
 
+from backend.clip import cosine_similarity, get_image_embedding, get_text_embedding
 from backend.common.models import Outfit, User, db
 
 auth = Blueprint('auth', __name__)
+
+IMAGE_EMBEDDING_CACHE: Dict[str, List[float]] = {}
+
+
+def _fetch_image_bytes(url: str) -> Optional[bytes]:
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            return response.read()
+    except Exception:
+        return None
+
+
+def _build_clip_query(user: User, styles: List[str]) -> str:
+    gender = _normalize_gender(getattr(user, 'gender', None))
+    style_desc = ', '.join(styles) if styles else 'fashionable outfits'
+    return (
+        f"A {gender} user who prefers {style_desc}. "
+        f"Recommend clothing combinations that feel modern, comfortable, and true to their style preferences."
+    )
+
+
+def _get_recommendation_score(rec: Dict, query_embedding: List[float], user_styles: List[str]) -> float:
+    image_url = rec.get('image')
+    if not image_url or not query_embedding:
+        return 0.0
+
+    embedding = IMAGE_EMBEDDING_CACHE.get(image_url)
+    if embedding is None:
+        image_bytes = _fetch_image_bytes(image_url)
+        if image_bytes is None:
+            return 0.0
+        embedding = get_image_embedding(image_bytes)
+        IMAGE_EMBEDDING_CACHE[image_url] = embedding
+
+    score = cosine_similarity(query_embedding, embedding)
+    style_bonus = 0.5 if any(style in user_styles for style in rec.get('styles', [])) else 0.25
+    return score * 0.75 + style_bonus * 0.25
 
 
 MODEL_POOL = {
@@ -11,16 +51,37 @@ MODEL_POOL = {
         'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=900&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=900&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1504593811423-6dd665756598?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517841905240-c0f7d8ea56b7?w=900&auto=format&fit=crop',
     ],
     'female': [
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1515372039744-b1c41f1db885?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1524504388940-3a3fde2f66f8?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1515372039744-2c7aef9493d7?w=900&auto=format&fit=crop',
     ],
     'diverse': [
         'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1515372039744-2c7aef9493d7?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop',
     ],
 }
 
@@ -39,9 +100,20 @@ def _normalize_gender(gender):
 def _select_model_image(gender, style, fallback):
     normalized_gender = _normalize_gender(gender)
     pool = MODEL_POOL.get(normalized_gender, MODEL_POOL['diverse'])
-    if style and style.lower() in {'romantic', 'bohemian', 'vintage'}:
-        pool = pool + pool
     return random.choice(pool) if pool else fallback
+
+
+def _assign_model_images(recommendations, gender):
+    normalized_gender = _normalize_gender(gender)
+    pool = MODEL_POOL.get(normalized_gender, MODEL_POOL['diverse']).copy()
+    random.shuffle(pool)
+
+    if len(pool) < len(recommendations):
+        pool = pool * ((len(recommendations) // len(pool)) + 1)
+        random.shuffle(pool)
+
+    for idx, rec in enumerate(recommendations):
+        rec['modelImage'] = pool[idx]
 
 
 @auth.route('/api/auth/register', methods=['POST'])
@@ -320,10 +392,32 @@ def get_recommendations():
                 recommendations.extend(style_recommendations[style])
 
         gender_pref = _normalize_gender(getattr(user, 'gender', None))
-        for rec in recommendations:
-            rec['modelImage'] = _select_model_image(gender_pref, rec.get('styles', [None])[0], rec.get('image'))
+        _assign_model_images(recommendations, gender_pref)
 
-        return jsonify({"recommendations": recommendations, "userStyles": styles, "gender": gender_pref}), 200
+        query_embedding = None
+        try:
+            query_text = _build_clip_query(user, styles)
+            query_embedding = get_text_embedding(query_text)
+        except Exception:
+            query_embedding = None
+
+        for rec in recommendations:
+            try:
+                clip_score = _get_recommendation_score(rec, query_embedding, styles)
+                rec['clipScore'] = round(clip_score, 4)
+                rec['matchPercentage'] = min(100, max(1, round(20 + clip_score * 80)))
+            except Exception:
+                rec['clipScore'] = 0.0
+                rec['matchPercentage'] = random.randint(40, 75)
+
+        recommendations.sort(key=lambda item: item.get('clipScore', 0), reverse=True)
+        top_recommendations = recommendations[:5]
+
+        return jsonify({
+            "recommendations": top_recommendations,
+            "userStyles": styles,
+            "gender": gender_pref
+        }), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch recommendations: {str(e)}"}), 500
 
