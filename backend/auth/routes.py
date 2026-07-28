@@ -1,3 +1,4 @@
+import json
 import random
 import urllib.request
 from typing import Dict, List, Optional
@@ -230,9 +231,11 @@ def save_outfit():
     outfit = Outfit(
         user_id=user_id,
         occasion=data.get("occasion", ""),
+        outerwear_item=data.get("items", {}).get("outerwear"),
         top_item=data.get("items", {}).get("top"),
         bottom_item=data.get("items", {}).get("bottom"),
         shoes_item=data.get("items", {}).get("shoes"),
+        item_data=json.dumps(data.get("items", {})),
         weather=data.get("weather", ""),
         ai_note=data.get("aiNote", "")
     )
@@ -257,6 +260,26 @@ def get_saved_outfits():
     outfits = Outfit.query.filter_by(user_id=user_id).all()
 
     return jsonify({"outfits": [outfit.to_dict() for outfit in outfits], "totalOutfits": len(outfits)}), 200
+
+
+@auth.route('/api/outfit/delete/<int:outfit_id>', methods=['DELETE'])
+def delete_outfit(outfit_id):
+    user_id = session.get('user_id')
+
+    if not user_id:
+        return jsonify({"message": "User not authenticated. Please login first."}), 401
+
+    outfit = Outfit.query.filter_by(id=outfit_id, user_id=user_id).first()
+    if not outfit:
+        return jsonify({"message": "Outfit not found."}), 404
+
+    try:
+        db.session.delete(outfit)
+        db.session.commit()
+        return jsonify({"message": "Outfit deleted successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Failed to delete outfit: {str(e)}"}), 500
 
 
 @auth.route('/api/auth/logout', methods=['POST'])

@@ -70,22 +70,35 @@ class Outfit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     occasion = db.Column(db.String(120), nullable=False)
+    outerwear_item = db.Column(db.String(255))
     top_item = db.Column(db.String(255))
     bottom_item = db.Column(db.String(255))
     shoes_item = db.Column(db.String(255))
+    item_data = db.Column(db.Text)
     weather = db.Column(db.String(120))
     ai_note = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
-        return {
-            'id': self.id,
-            'occasion': self.occasion,
-            'items': {
+        items = None
+        if self.item_data:
+            try:
+                items = json.loads(self.item_data)
+            except Exception:
+                items = None
+
+        if not items:
+            items = {
+                'outerwear': self.outerwear_item,
                 'top': self.top_item,
                 'bottom': self.bottom_item,
                 'shoes': self.shoes_item
-            },
+            }
+
+        return {
+            'id': self.id,
+            'occasion': self.occasion,
+            'items': items,
             'weather': self.weather,
             'aiNote': self.ai_note,
             'createdAt': self.created_at.isoformat() if self.created_at else None

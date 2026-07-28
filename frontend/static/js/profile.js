@@ -122,10 +122,50 @@ async function loadWardrobe() {
         });
 
         const icon = occasionIcons[outfit.occasion] || occasionIcons['default'];
-        const outerwearLabel = outfit.items?.outerwear || '—';
-        const topLabel = outfit.items?.top || '—';
-        const bottomLabel = outfit.items?.bottom || '—';
-        const shoesLabel = outfit.items?.shoes || '—';
+        const outerwearItem = outfit.items?.outerwear || null;
+        const topItem = outfit.items?.top || null;
+        const bottomItem = outfit.items?.bottom || null;
+        const shoesItem = outfit.items?.shoes || null;
+
+        const outerwearLabel = typeof outerwearItem === 'object' ? outerwearItem.name : outerwearItem || '—';
+        const topLabel = typeof topItem === 'object' ? topItem.name : topItem || '—';
+        const bottomLabel = typeof bottomItem === 'object' ? bottomItem.name : bottomItem || '—';
+        const shoesLabel = typeof shoesItem === 'object' ? shoesItem.name : shoesItem || '—';
+
+        const outerwearImage = typeof outerwearItem === 'object' ? outerwearItem.url : null;
+        const topImage = typeof topItem === 'object' ? topItem.url : null;
+        const bottomImage = typeof bottomItem === 'object' ? bottomItem.url : null;
+        const shoesImage = typeof shoesItem === 'object' ? shoesItem.url : null;
+
+        let itemImages = '';
+        if (outerwearImage) {
+          itemImages += `
+            <div class="outfit-thumb">
+              <img src="${outerwearImage}" alt="Outerwear image" onerror="this.src='https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=320&auto=format&fit=crop'">
+              <span>Outerwear</span>
+            </div>`;
+        }
+        if (topImage) {
+          itemImages += `
+            <div class="outfit-thumb">
+              <img src="${topImage}" alt="Top image" onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?w=320&auto=format&fit=crop'">
+              <span>Top</span>
+            </div>`;
+        }
+        if (bottomImage) {
+          itemImages += `
+            <div class="outfit-thumb">
+              <img src="${bottomImage}" alt="Bottom image" onerror="this.src='https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=320&auto=format&fit=crop'">
+              <span>Bottom</span>
+            </div>`;
+        }
+        if (shoesImage) {
+          itemImages += `
+            <div class="outfit-thumb">
+              <img src="${shoesImage}" alt="Shoes image" onerror="this.src='https://images.unsplash.com/photo-1517849845537-4d257902454a?w=320&auto=format&fit=crop'">
+              <span>Shoes</span>
+            </div>`;
+        }
 
         // Build item rows dynamically
         let itemsRows = '';
@@ -172,12 +212,18 @@ async function loadWardrobe() {
             <h3 class="outfit-occasion">${outfit.occasion}</h3>
             <span class="weather-tag">🌤️ ${outfit.weather || 'Any weather'}</span>
           </div>
+          <div class="outfit-images-row">
+            ${itemImages}
+          </div>
           <div class="outfit-items-list">
             ${itemsRows}
           </div>
           <div class="outfit-card-footer">
             <p class="outfit-note">${outfit.aiNote || 'Saved outfit'}</p>
-            <span class="outfit-date">📅 ${date}</span>
+            <div class="outfit-footer-actions">
+              <span class="outfit-date">📅 ${date}</span>
+              <button class="delete-btn" onclick="deleteOutfit(${outfit.id})">Delete</button>
+            </div>
           </div>
         `;
         container.appendChild(card);
@@ -196,6 +242,43 @@ async function loadWardrobe() {
     console.error('Error loading wardrobe:', error);
     const container = document.getElementById('wardrobeContainer');
     container.innerHTML = '<p style="color:#ef4444;">Could not load wardrobe. Please refresh.</p>';
+  }
+}
+
+async function deleteOutfit(outfitId) {
+  if (!confirm('Delete this saved outfit?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/outfit/delete/${outfitId}`, {
+      method: 'DELETE'
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      await loadWardrobe();
+    } else {
+      alert(data.message || 'Failed to delete outfit.');
+    }
+  } catch (error) {
+    console.error('Error deleting outfit:', error);
+    alert('Unable to delete outfit right now. Please try again later.');
+  }
+}
+
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      await loadWardrobe();
+    } else {
+      console.error('Failed to delete outfit:', data.message);
+      alert('Unable to delete outfit. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error deleting outfit:', error);
+    alert('Unable to delete outfit. Please try again.');
   }
 }
 

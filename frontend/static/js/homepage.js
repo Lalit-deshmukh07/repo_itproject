@@ -1013,10 +1013,22 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
   const outfitData = {
     occasion: occ,
     items: {
-      outerwear: outfit.outerwear ? `Outerwear: ${outfit.outerwear.name}` : null,
-      top: outfit.isDress ? `Dress: ${outfit.top.name}` : `Top: ${outfit.top.name}`,
-      bottom: outfit.isDress ? null : (outfit.bottom ? `Bottom: ${outfit.bottom.name}` : null),
-      shoes: `Shoes: ${outfit.shoe.name}`
+      outerwear: outfit.outerwear ? {
+        name: `Outerwear: ${outfit.outerwear.name}`,
+        url: outfit.outerwear.url
+      } : null,
+      top: {
+        name: outfit.isDress ? `Dress: ${outfit.top.name}` : `Top: ${outfit.top.name}`,
+        url: outfit.top.url
+      },
+      bottom: outfit.isDress ? null : (outfit.bottom ? {
+        name: `Bottom: ${outfit.bottom.name}`,
+        url: outfit.bottom.url
+      } : null),
+      shoes: {
+        name: `Shoes: ${outfit.shoe.name}`,
+        url: outfit.shoe.url
+      }
     },
     weather: currentWeather.temp !== null
       ? `${currentWeather.condition}, ${currentWeather.temp}°C` : 'Cloudy, 18°C',

@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -24,6 +25,27 @@ os.makedirs(DB_PATH, exist_ok=True)
 os.makedirs(SESSION_PATH, exist_ok=True)
 
 
+def _ensure_outfit_schema():
+    db_file = DB_PATH / 'wearitright.db'
+    if not db_file.exists():
+        return
+
+    with sqlite3.connect(db_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='outfits'")
+        if not cursor.fetchone():
+            return
+
+        cursor.execute("PRAGMA table_info(outfits)")
+        columns = {row[1] for row in cursor.fetchall()}
+
+        if 'outerwear_item' not in columns:
+            cursor.execute("ALTER TABLE outfits ADD COLUMN outerwear_item TEXT")
+        if 'item_data' not in columns:
+            cursor.execute("ALTER TABLE outfits ADD COLUMN item_data TEXT")
+        conn.commit()
+
+
 def create_app():
     """Create and configure the Flask application."""
     app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
@@ -33,6 +55,7 @@ def create_app():
 
     db.init_app(app)
     with app.app_context():
+        _ensure_outfit_schema()
         db.create_all()
 
     app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
