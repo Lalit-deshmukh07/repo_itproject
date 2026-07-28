@@ -926,9 +926,9 @@ function generateOutfitCombination() {
 // Render outfit option cards — respects dress/top compatibility and optional outerwear
 function renderOutfitOptions(outfits, occ, aiNote, vibe) {
   outfitOptionsGrid.innerHTML = '';
-  const matchScores = [94, 88, 91];
 
   outfits.forEach((outfit, i) => {
+    const matchScore = 1 + Math.floor(Math.random() * 100);
     const card = document.createElement('div');
     card.className = 'outfit-option-card';
     card.dataset.index = i;
@@ -980,7 +980,7 @@ function renderOutfitOptions(outfits, occ, aiNote, vibe) {
 
     const safeNote = aiNote.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
     card.innerHTML = `
-      <div class="option-badge">Option ${i + 1} · ${matchScores[i]}%${vibeBadge}</div>
+      <div class="option-badge">Option ${i + 1} · ${matchScore}%${vibeBadge}</div>
       <div class="option-items">${itemsHtml}</div>
       <div class="option-meta">
         <p><strong>Occasion:</strong> ${occ}${vibe ? ` &bull; <em>${vibe} vibe</em>` : ''}</p>

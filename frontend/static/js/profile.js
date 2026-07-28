@@ -70,9 +70,10 @@ async function loadRecommendations() {
       data.recommendations.forEach(rec => {
         const card = document.createElement('div');
         card.className = 'recommendation-card';
+        const modelImage = rec.modelImage || rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop';
         card.innerHTML = `
           <div class="rec-img-wrap">
-            <img src="${rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'}"
+            <img src="${modelImage}"
                  alt="${rec.title}" class="rec-img"
                  onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'">
           </div>

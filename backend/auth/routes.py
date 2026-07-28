@@ -1,8 +1,47 @@
+import random
 from flask import Blueprint, jsonify, request, session
 
 from backend.common.models import Outfit, User, db
 
 auth = Blueprint('auth', __name__)
+
+
+MODEL_POOL = {
+    'male': [
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1504593811423-6dd665756598?w=900&auto=format&fit=crop',
+    ],
+    'female': [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+    ],
+    'diverse': [
+        'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=900&auto=format&fit=crop',
+    ],
+}
+
+
+def _normalize_gender(gender):
+    if not gender:
+        return 'diverse'
+    normalized = str(gender).strip().lower()
+    if normalized in {'male', 'man', 'm', 'he/him'}:
+        return 'male'
+    if normalized in {'female', 'woman', 'f', 'she/her'}:
+        return 'female'
+    return 'diverse'
+
+
+def _select_model_image(gender, style, fallback):
+    normalized_gender = _normalize_gender(gender)
+    pool = MODEL_POOL.get(normalized_gender, MODEL_POOL['diverse'])
+    if style and style.lower() in {'romantic', 'bohemian', 'vintage'}:
+        pool = pool + pool
+    return random.choice(pool) if pool else fallback
 
 
 @auth.route('/api/auth/register', methods=['POST'])
@@ -280,7 +319,11 @@ def get_recommendations():
             if style in style_recommendations:
                 recommendations.extend(style_recommendations[style])
 
-        return jsonify({"recommendations": recommendations, "userStyles": styles}), 200
+        gender_pref = _normalize_gender(getattr(user, 'gender', None))
+        for rec in recommendations:
+            rec['modelImage'] = _select_model_image(gender_pref, rec.get('styles', [None])[0], rec.get('image'))
+
+        return jsonify({"recommendations": recommendations, "userStyles": styles, "gender": gender_pref}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch recommendations: {str(e)}"}), 500
 
