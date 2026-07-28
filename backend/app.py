@@ -32,6 +32,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
     app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
     app.config['SESSION_TYPE'] = 'filesystem'

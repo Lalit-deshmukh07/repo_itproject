@@ -8,13 +8,15 @@ __all__ = ['auth']
 # ---------------------------
 @auth.route('/api/auth/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data:
+        data = request.form.to_dict()
 
     if not data:
         return jsonify({"message": "No data received"}), 400
 
-    first_name = (data.get("firstName") or "").strip()
-    last_name = (data.get("lastName") or "").strip()
+    first_name = (data.get("firstName") or data.get("first_name") or "").strip()
+    last_name = (data.get("lastName") or data.get("last_name") or "").strip()
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
     consent = data.get("consent")
