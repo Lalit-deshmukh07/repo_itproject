@@ -125,20 +125,34 @@ async function loadWardrobe() {
         const occasionValue = outfit.occasion || 'Saved Outfit';
         const icon = occasionIcons[occasionValue] || occasionIcons['default'];
         const outfitItems = outfit.items || {};
-        const outerwearItem = outfitItems.outerwear || null;
-        const topItem = outfitItems.top || null;
-        const bottomItem = outfitItems.bottom || null;
-        const shoesItem = outfitItems.shoes || null;
+        const outerwearItem = outfitItems.outerwear || outfitItems.outerwear_item || null;
+        const topItem = outfitItems.top || outfitItems.top_item || null;
+        const bottomItem = outfitItems.bottom || outfitItems.bottom_item || null;
+        const shoesItem = outfitItems.shoes || outfitItems.shoes_item || null;
 
-        const outerwearLabel = typeof outerwearItem === 'object' ? (outerwearItem.name || outerwearItem.title || outerwearItem.label || '—') : (outerwearItem || '—');
-        const topLabel = typeof topItem === 'object' ? (topItem.name || topItem.title || topItem.label || '—') : (topItem || '—');
-        const bottomLabel = typeof bottomItem === 'object' ? (bottomItem.name || bottomItem.title || bottomItem.label || '—') : (bottomItem || '—');
-        const shoesLabel = typeof shoesItem === 'object' ? (shoesItem.name || shoesItem.title || shoesItem.label || '—') : (shoesItem || '—');
+        const normalizeItemValue = (item) => {
+          if (!item) return '—';
+          if (typeof item === 'string') return item;
+          if (typeof item === 'object') {
+            return item.name || item.title || item.label || item.value || '—';
+          }
+          return String(item);
+        };
 
-        const outerwearImage = typeof outerwearItem === 'object' ? (outerwearItem.url || outerwearItem.image || null) : null;
-        const topImage = typeof topItem === 'object' ? (topItem.url || topItem.image || null) : null;
-        const bottomImage = typeof bottomItem === 'object' ? (bottomItem.url || bottomItem.image || null) : null;
-        const shoesImage = typeof shoesItem === 'object' ? (shoesItem.url || shoesItem.image || null) : null;
+        const normalizeItemImage = (item) => {
+          if (!item || typeof item !== 'object') return null;
+          return item.url || item.image || item.thumbnail || null;
+        };
+
+        const outerwearLabel = normalizeItemValue(outerwearItem);
+        const topLabel = normalizeItemValue(topItem);
+        const bottomLabel = normalizeItemValue(bottomItem);
+        const shoesLabel = normalizeItemValue(shoesItem);
+
+        const outerwearImage = normalizeItemImage(outerwearItem);
+        const topImage = normalizeItemImage(topItem);
+        const bottomImage = normalizeItemImage(bottomItem);
+        const shoesImage = normalizeItemImage(shoesItem);
 
         let itemImages = '';
         if (outerwearImage) {

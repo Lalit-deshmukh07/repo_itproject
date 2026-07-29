@@ -111,16 +111,11 @@ def create_app():
             return None
 
         host = request.host.split(':', 1)[0]
-        if host not in {'localhost', '0.0.0.0'}:
+        if host not in {'localhost', '0.0.0.0', '127.0.0.1'}:
             return None
 
         if request.environ.get('werkzeug.test'):
             return None
-
-        port = request.host.split(':', 1)[1] if ':' in request.host else request.environ.get('SERVER_PORT', '5001')
-        canonical_host = f'127.0.0.1:{port}'
-        if request.host != canonical_host:
-            return redirect(request.url.replace(request.host, canonical_host, 1), code=307)
 
         return None
 

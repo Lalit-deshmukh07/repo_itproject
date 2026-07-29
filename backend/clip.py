@@ -15,11 +15,13 @@ _clip_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def _load_clip():
     global _clip_model, _clip_processor
-    if _clip_model is None or _clip_processor is None:
-        _clip_model = CLIPModel.from_pretrained(CLIP_MODEL_NAME)
-        _clip_processor = CLIPProcessor.from_pretrained(CLIP_MODEL_NAME)
-        _clip_model.to(_clip_device)
-        _clip_model.eval()
+    if _clip_model is not None and _clip_processor is not None:
+        return _clip_model, _clip_processor
+
+    _clip_model = CLIPModel.from_pretrained(CLIP_MODEL_NAME)
+    _clip_processor = CLIPProcessor.from_pretrained(CLIP_MODEL_NAME)
+    _clip_model.to(_clip_device)
+    _clip_model.eval()
     return _clip_model, _clip_processor
 
 
