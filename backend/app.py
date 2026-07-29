@@ -25,13 +25,37 @@ os.makedirs(DB_PATH, exist_ok=True)
 os.makedirs(SESSION_PATH, exist_ok=True)
 
 
+def initialize_database(app_instance):
+    db_file = DB_PATH / 'wearitright.db'
+    db_file.parent.mkdir(parents=True, exist_ok=True)
+    db_file.touch(exist_ok=True)
+
+    with app_instance.app_context():
+        db.create_all()
+
+
 def _ensure_outfit_schema():
     db_file = DB_PATH / 'wearitright.db'
-    if not db_file.exists():
-        return
+    db_file.parent.mkdir(parents=True, exist_ok=True)
 
     with sqlite3.connect(db_file) as conn:
         cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS outfits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                occasion TEXT NOT NULL,
+                outerwear_item TEXT,
+                top_item TEXT,
+                bottom_item TEXT,
+                shoes_item TEXT,
+                item_data TEXT,
+                weather TEXT,
+                ai_note TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='outfits'")
         if not cursor.fetchone():
             return
@@ -43,6 +67,8 @@ def _ensure_outfit_schema():
             cursor.execute("ALTER TABLE outfits ADD COLUMN outerwear_item TEXT")
         if 'item_data' not in columns:
             cursor.execute("ALTER TABLE outfits ADD COLUMN item_data TEXT")
+        if 'ai_note' not in columns:
+            cursor.execute("ALTER TABLE outfits ADD COLUMN ai_note TEXT")
         conn.commit()
 
 
@@ -54,9 +80,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
-    with app.app_context():
-        _ensure_outfit_schema()
-        db.create_all()
+    initialize_database(app)
+    _ensure_outfit_schema()
 
     app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-12345')
     app.config['SESSION_TYPE'] = 'filesystem'
@@ -69,6 +94,35 @@ def create_app():
 
     Session(app)
     CORS(app)
+
+    @app.before_request
+    def ensure_database_ready():
+        if request.path.startswith('/static/'):
+            return None
+
+        try:
+            initialize_database(app)
+        except Exception as exc:
+            app.logger.exception('Database initialization failed before request: %s', exc)
+
+    @app.before_request
+    def normalize_loopback_host():
+        if request.path.startswith('/api/') or request.path.startswith('/static/'):
+            return None
+
+        host = request.host.split(':', 1)[0]
+        if host not in {'localhost', '0.0.0.0'}:
+            return None
+
+        if request.environ.get('werkzeug.test'):
+            return None
+
+        port = request.host.split(':', 1)[1] if ':' in request.host else request.environ.get('SERVER_PORT', '5001')
+        canonical_host = f'127.0.0.1:{port}'
+        if request.host != canonical_host:
+            return redirect(request.url.replace(request.host, canonical_host, 1), code=307)
+
+        return None
 
     app.register_blueprint(auth)
 
@@ -121,8 +175,7 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print('✓ Database initialized successfully!')
+    initialize_database(app)
+    print('✓ Database initialized successfully!')
 
     app.run(debug=True, host='0.0.0.0', port=5001)

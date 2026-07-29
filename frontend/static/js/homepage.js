@@ -1054,6 +1054,22 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
     if (response.ok) {
       btn.textContent = '✓ Saved!';
       btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      if (window.location.pathname === '/profile') {
+        try {
+          await fetch('/api/outfit/get-all');
+        } catch (error) {
+          console.warn('Could not refresh wardrobe after save:', error);
+        }
+      } else if (window.location.pathname === '/') {
+        try {
+          const profilePage = window.open('/profile', '_blank', 'noopener,noreferrer');
+          if (profilePage) {
+            profilePage.opener = null;
+          }
+        } catch (error) {
+          console.warn('Could not open profile after save:', error);
+        }
+      }
       alert('✓ Outfit saved to your wardrobe!');
     } else {
       btn.textContent = '💾 Save This Outfit';

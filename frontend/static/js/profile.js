@@ -9,9 +9,10 @@ async function loadProfile() {
       return;
     }
 
-    const user = authData.user;
-    document.getElementById('userName').textContent = `Welcome, ${user.name}!`;
-    document.getElementById('userEmail').textContent = user.email;
+    const user = authData.user || {};
+    const name = user.name || 'there';
+    document.getElementById('userName').textContent = `Welcome, ${name}!`;
+    document.getElementById('userEmail').textContent = user.email || 'No email available';
 
     // Load preferences
     await loadPreferences();
@@ -121,21 +122,23 @@ async function loadWardrobe() {
           day: '2-digit', month: 'short', year: 'numeric'
         });
 
-        const icon = occasionIcons[outfit.occasion] || occasionIcons['default'];
-        const outerwearItem = outfit.items?.outerwear || null;
-        const topItem = outfit.items?.top || null;
-        const bottomItem = outfit.items?.bottom || null;
-        const shoesItem = outfit.items?.shoes || null;
+        const occasionValue = outfit.occasion || 'Saved Outfit';
+        const icon = occasionIcons[occasionValue] || occasionIcons['default'];
+        const outfitItems = outfit.items || {};
+        const outerwearItem = outfitItems.outerwear || null;
+        const topItem = outfitItems.top || null;
+        const bottomItem = outfitItems.bottom || null;
+        const shoesItem = outfitItems.shoes || null;
 
-        const outerwearLabel = typeof outerwearItem === 'object' ? outerwearItem.name : outerwearItem || '—';
-        const topLabel = typeof topItem === 'object' ? topItem.name : topItem || '—';
-        const bottomLabel = typeof bottomItem === 'object' ? bottomItem.name : bottomItem || '—';
-        const shoesLabel = typeof shoesItem === 'object' ? shoesItem.name : shoesItem || '—';
+        const outerwearLabel = typeof outerwearItem === 'object' ? (outerwearItem.name || outerwearItem.title || outerwearItem.label || '—') : (outerwearItem || '—');
+        const topLabel = typeof topItem === 'object' ? (topItem.name || topItem.title || topItem.label || '—') : (topItem || '—');
+        const bottomLabel = typeof bottomItem === 'object' ? (bottomItem.name || bottomItem.title || bottomItem.label || '—') : (bottomItem || '—');
+        const shoesLabel = typeof shoesItem === 'object' ? (shoesItem.name || shoesItem.title || shoesItem.label || '—') : (shoesItem || '—');
 
-        const outerwearImage = typeof outerwearItem === 'object' ? outerwearItem.url : null;
-        const topImage = typeof topItem === 'object' ? topItem.url : null;
-        const bottomImage = typeof bottomItem === 'object' ? bottomItem.url : null;
-        const shoesImage = typeof shoesItem === 'object' ? shoesItem.url : null;
+        const outerwearImage = typeof outerwearItem === 'object' ? (outerwearItem.url || outerwearItem.image || null) : null;
+        const topImage = typeof topItem === 'object' ? (topItem.url || topItem.image || null) : null;
+        const bottomImage = typeof bottomItem === 'object' ? (bottomItem.url || bottomItem.image || null) : null;
+        const shoesImage = typeof shoesItem === 'object' ? (shoesItem.url || shoesItem.image || null) : null;
 
         let itemImages = '';
         if (outerwearImage) {
@@ -209,7 +212,7 @@ async function loadWardrobe() {
         card.innerHTML = `
           <div class="outfit-card-header">
             <span class="occasion-icon">${icon}</span>
-            <h3 class="outfit-occasion">${outfit.occasion}</h3>
+            <h3 class="outfit-occasion">${occasionValue}</h3>
             <span class="weather-tag">🌤️ ${outfit.weather || 'Any weather'}</span>
           </div>
           <div class="outfit-images-row">
@@ -241,7 +244,13 @@ async function loadWardrobe() {
   } catch (error) {
     console.error('Error loading wardrobe:', error);
     const container = document.getElementById('wardrobeContainer');
-    container.innerHTML = '<p style="color:#ef4444;">Could not load wardrobe. Please refresh.</p>';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🧥</div>
+        <h3>We could not load your wardrobe yet</h3>
+        <p>Please refresh the page or try saving an outfit again.</p>
+      </div>
+    `;
   }
 }
 
@@ -264,21 +273,6 @@ async function deleteOutfit(outfitId) {
   } catch (error) {
     console.error('Error deleting outfit:', error);
     alert('Unable to delete outfit right now. Please try again later.');
-  }
-}
-
-    });
-    const data = await response.json();
-
-    if (response.ok) {
-      await loadWardrobe();
-    } else {
-      console.error('Failed to delete outfit:', data.message);
-      alert('Unable to delete outfit. Please try again.');
-    }
-  } catch (error) {
-    console.error('Error deleting outfit:', error);
-    alert('Unable to delete outfit. Please try again.');
   }
 }
 

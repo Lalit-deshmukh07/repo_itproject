@@ -134,6 +134,65 @@ if (resetForm) {
   });
 }
 
+function updateStyleOptionState() {
+  document.querySelectorAll('.style-option input[type="checkbox"]').forEach((checkbox) => {
+    const option = checkbox.closest('.style-option');
+    if (option) {
+      option.classList.toggle('checked', checkbox.checked);
+    }
+  });
+}
+
+function addExclusionTag(value) {
+  const exclusionInput = document.getElementById('exclusions');
+  const tagContainer = document.getElementById('exclusion-tags');
+  if (!tagContainer || !value) return;
+
+  const tag = document.createElement('div');
+  tag.className = 'tag';
+  tag.innerHTML = `${value}<button type="button" onclick="this.parentElement.remove()">×</button>`;
+  tagContainer.appendChild(tag);
+  if (exclusionInput) exclusionInput.value = '';
+}
+
+async function loadExistingProfilePreferences() {
+  try {
+    const response = await fetch('/api/user/preferences');
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const prefs = data.preferences || {};
+
+    const genderField = document.getElementById('gender');
+    if (genderField && prefs.gender) {
+      genderField.value = prefs.gender;
+    }
+
+    const topSizeField = document.getElementById('topSize');
+    if (topSizeField && prefs.topSize) {
+      topSizeField.value = prefs.topSize;
+    }
+
+    const bottomSizeField = document.getElementById('bottomSize');
+    if (bottomSizeField && prefs.bottomSize) {
+      bottomSizeField.value = prefs.bottomSize;
+    }
+
+    document.querySelectorAll('input[name="style"]').forEach((checkbox) => {
+      checkbox.checked = Array.isArray(prefs.styles) && prefs.styles.includes(checkbox.value);
+    });
+    updateStyleOptionState();
+
+    const tagContainer = document.getElementById('exclusion-tags');
+    if (tagContainer && Array.isArray(prefs.exclusions)) {
+      tagContainer.innerHTML = '';
+      prefs.exclusions.forEach((item) => addExclusionTag(item));
+    }
+  } catch (error) {
+    console.error('Error loading profile preferences:', error);
+  }
+}
+
 // Exclusion tags (profile setup)
 const exclusionInput = document.getElementById('exclusions');
 const tagContainer = document.getElementById('exclusion-tags');
@@ -141,15 +200,17 @@ if (exclusionInput) {
   exclusionInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const val = exclusionInput.value.trim();
-      if (!val) return;
-      const tag = document.createElement('div');
-      tag.className = 'tag';
-      tag.innerHTML = `${val}<button onclick="this.parentElement.remove()">×</button>`;
-      tagContainer.appendChild(tag);
-      exclusionInput.value = '';
+      addExclusionTag(exclusionInput.value.trim());
     }
   });
+}
+
+document.querySelectorAll('.style-option input[type="checkbox"]').forEach((checkbox) => {
+  checkbox.addEventListener('change', updateStyleOptionState);
+});
+
+if (document.getElementById('profileForm')) {
+  loadExistingProfilePreferences();
 }
 
 // Profile setup form

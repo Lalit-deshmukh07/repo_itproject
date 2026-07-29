@@ -204,14 +204,22 @@ def reset_request():
 @auth.route('/api/auth/status', methods=['GET'])
 def check_auth_status():
     user_id = session.get('user_id')
-    user_email = session.get('user_email')
-    user_name = session.get('user_name')
 
     if user_id:
-        return jsonify({
-            "authenticated": True,
-            "user": {"id": user_id, "email": user_email, "name": user_name}
-        }), 200
+        user = User.query.get(user_id)
+        if user:
+            user_payload = user.to_dict()
+            user_payload.update({
+                "id": user.id,
+                "email": user.email,
+                "name": f"{user.first_name} {user.last_name}".strip(),
+                "gender": user.gender,
+                "topSize": user.top_size,
+                "bottomSize": user.bottom_size,
+                "styles": user.get_style_preferences(),
+                "exclusions": user.get_exclusions(),
+            })
+            return jsonify({"authenticated": True, "user": user_payload}), 200
 
     return jsonify({"authenticated": False, "user": None}), 200
 
@@ -228,14 +236,28 @@ def save_outfit():
     if not data:
         return jsonify({"message": "No data received"}), 400
 
+    items = data.get("items", {}) or {}
+
+    def _stringify_item(item):
+        if item is None:
+            return None
+        if isinstance(item, str):
+            return item
+        if isinstance(item, dict):
+            name = item.get("name") or item.get("title") or item.get("label")
+            if name:
+                return str(name)
+            return json.dumps(item)
+        return str(item)
+
     outfit = Outfit(
         user_id=user_id,
         occasion=data.get("occasion", ""),
-        outerwear_item=data.get("items", {}).get("outerwear"),
-        top_item=data.get("items", {}).get("top"),
-        bottom_item=data.get("items", {}).get("bottom"),
-        shoes_item=data.get("items", {}).get("shoes"),
-        item_data=json.dumps(data.get("items", {})),
+        outerwear_item=_stringify_item(items.get("outerwear")),
+        top_item=_stringify_item(items.get("top")),
+        bottom_item=_stringify_item(items.get("bottom")),
+        shoes_item=_stringify_item(items.get("shoes")),
+        item_data=json.dumps(items),
         weather=data.get("weather", ""),
         ai_note=data.get("aiNote", "")
     )
