@@ -168,12 +168,14 @@ def register():
 
 @auth.route('/api/auth/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data:
+        data = request.form.to_dict()
 
     if not data:
         return jsonify({"message": "No data received"}), 400
 
-    email = (data.get("email") or "").strip().lower()
+    email = (data.get("email") or data.get("username") or "").strip().lower()
     password = data.get("password") or ""
 
     user = User.query.filter_by(email=email).first()
@@ -317,7 +319,9 @@ def save_preferences():
     if not user_id:
         return jsonify({"message": "User not authenticated"}), 401
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data:
+        data = request.form.to_dict()
 
     if not data:
         return jsonify({"message": "No data received"}), 400

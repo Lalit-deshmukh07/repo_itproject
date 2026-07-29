@@ -318,7 +318,7 @@ function getWeatherScene(condition, temp, shortTerm) {
 }
 
 function getOutfitForWeather(condition, temp, occ) {
-  const c = condition.toLowerCase();
+  const c = (condition || '').toLowerCase();
   const isHot = temp >= 25;
   const isCold = temp <= 10;
   const isRainy = c.includes('rain') || c.includes('drizzle') || c.includes('shower');
@@ -329,30 +329,30 @@ function getOutfitForWeather(condition, temp, occ) {
     College: {
       hot: 'Breathable tee or shirt + shorts/chinos, or a light dress, with sneakers/sandals',
       warm: 'Casual shirt or top + jeans/chinos, or a midi dress, with sneakers',
-      cold: 'Hoodie/sweater + jeans/trousers, or a knit dress + jacket, with sneakers/boots',
-      rain: 'Waterproof jacket + jeans/trousers, or a weather-safe dress + layer, with water-resistant shoes',
-      snow: 'Thick coat + thermal layers + trousers, or warm knit dress + tights, with insulated boots'
+      cold: 'Hoodie/sweater + jeans/trousers, or a knit dress with a light layer, with sneakers/boots',
+      rain: 'Light rain layer + jeans/trousers, or a weather-safe dress, with water-resistant shoes',
+      snow: 'Thermal layers + trousers, or warm knit dress + tights, with insulated boots'
     },
     Office: {
       hot: 'Breathable shirt/blouse + chinos/trousers, or a structured dress, with loafers/flats',
       warm: 'Blazer + tailored trousers, or a midi dress + blazer, with loafers/heels',
-      cold: 'Wool layers + formal trousers, or long-sleeve dress + coat, with leather shoes/boots',
-      rain: 'Trench/raincoat + dark trousers, or dress + water-safe layer, with waterproof shoes',
-      snow: 'Wool coat + insulated formal layers, or warm dress + tights + coat, with insulated footwear'
+      cold: 'Light knit layer + formal trousers, or long-sleeve dress with a soft layer, with leather shoes/boots',
+      rain: 'Trench or water-safe layer + dark trousers, or dress + light rain layer, with waterproof shoes',
+      snow: 'Warm formal layers + coat, or a dress with tights and a warm layer, with insulated footwear'
     },
     Party: {
       hot: 'Linen shirt + tailored bottoms, or a breezy dress, with sandals/loafers',
       warm: 'Fitted blazer + smart pants, or cocktail dress/jumpsuit, with heels/derbies',
-      cold: 'Layered party look: blazer/suit or dress + cardigan, with boots',
-      rain: 'Chic rain layer over party wear (suit or dress), with water-friendly boots',
-      snow: 'Warm statement coat over evening wear (suit or dress), with insulated boots'
+      cold: 'Layered party look: blazer/suit or dress + light cardigan, with boots',
+      rain: 'A polished rain layer over party wear, with water-friendly boots',
+      snow: 'Warm statement layer over evening wear, with insulated boots'
     },
     'Casual Day Out': {
       hot: 'Tank/tee + shorts or relaxed pants, or a light dress, with sandals/sneakers',
       warm: 'Light sweater or shirt + jeans/joggers, or a casual dress + light layer, with sneakers',
-      cold: 'Puffer/jacket + joggers/jeans, or knit dress + tights + layer, with trainers/boots',
-      rain: 'Rain jacket + quick-dry bottoms, or dress + raincoat, with waterproof boots/sneakers',
-      snow: 'Parka + thermal base + warm bottoms, or warm dress + leggings, with snow boots'
+      cold: 'Light knit layer + jeans/joggers, or a knit dress with a soft layer, with trainers/boots',
+      rain: 'A lightweight rain layer + quick-dry bottoms, or a dress with a water-safe layer, with waterproof boots/sneakers',
+      snow: 'Warm base + relaxed bottoms, or a warm dress with leggings, with snow boots'
     }
   };
 
@@ -640,28 +640,47 @@ if (occasion) {
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
   await checkAuthStatus();
-  restoreFromStorage();      // load saved photos for the current authenticated user
   setupCategoryUploads();
   setupGenerateMoreBtn();
   loadWeather();
 });
 
+function resetWardrobeState() {
+  ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(category => {
+    categoryFiles[category] = [];
+    const listContainer = document.getElementById(`${category}List`);
+    if (listContainer) {
+      listContainer.innerHTML = '';
+    }
+  });
+}
+
 // Check if user is logged in
 async function checkAuthStatus() {
   try {
-    const response = await fetch('/api/auth/status');
+    const response = await fetch('/api/auth/status', { credentials: 'same-origin' });
     const data = await response.json();
     userAuthenticated = data.authenticated;
 
-    if (userAuthenticated && data.user && data.user.id) {
-      currentUserStorageKey = `${STORAGE_KEY_PREFIX}_${data.user.id}`;
-    } else {
-      currentUserStorageKey = null;
+    const nextUserStorageKey = userAuthenticated && data.user && data.user.id
+      ? `${STORAGE_KEY_PREFIX}_${data.user.id}`
+      : null;
+
+    const userChanged = currentUserStorageKey !== nextUserStorageKey;
+    currentUserStorageKey = nextUserStorageKey;
+
+    if (userChanged) {
+      resetWardrobeState();
+    }
+
+    if (currentUserStorageKey) {
+      restoreFromStorage();
     }
   } catch (error) {
     console.log('Auth check failed:', error);
     userAuthenticated = false;
     currentUserStorageKey = null;
+    resetWardrobeState();
   }
 }
 
@@ -788,20 +807,33 @@ function saveToStorage() {
 
 function restoreFromStorage() {
   try {
-    if (!currentUserStorageKey) return;
+    if (!currentUserStorageKey) {
+      resetWardrobeState();
+      return;
+    }
 
     const raw = localStorage.getItem(currentUserStorageKey);
-    if (!raw) return;
+    if (!raw) {
+      resetWardrobeState();
+      return;
+    }
 
     const data = JSON.parse(raw);
     ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
       if (data[cat] && data[cat].length > 0) {
         categoryFiles[cat] = data[cat];
         renderThumbnails(cat);
+      } else {
+        categoryFiles[cat] = [];
+        const listContainer = document.getElementById(`${cat}List`);
+        if (listContainer) {
+          listContainer.innerHTML = '';
+        }
       }
     });
   } catch (e) {
     console.warn('Could not restore from storage:', e);
+    resetWardrobeState();
   }
 }
 
@@ -863,6 +895,13 @@ function generateOutfitCombination() {
   const hasTops    = categoryFiles.tops.length > 0;
   const hasBottoms = categoryFiles.bottoms.length > 0;
   const hasOuterwear = categoryFiles.outerwear.length > 0;
+  const temp = currentWeather.temp !== null ? currentWeather.temp : 18;
+  const condition = currentWeather.condition || 'Clear';
+  const weatherLower = condition.toLowerCase();
+  const isHotWeather = temp >= 25;
+  const isColdWeather = temp <= 10;
+  const isRainyWeather = weatherLower.includes('rain') || weatherLower.includes('drizzle') || weatherLower.includes('shower');
+  const isSnowyWeather = weatherLower.includes('snow');
 
   // Style vibe preference: elegant/bohemian/romantic prefer dresses;
   // sporty/preppy prefer tops+bottoms
@@ -898,10 +937,13 @@ function generateOutfitCombination() {
     }
 
     const shoe = pickRandom(categoryFiles.shoes);
-    
-    // Optionally add outerwear (40% chance if available)
-    const outerwear = (hasOuterwear && Math.random() < 0.4) ? pickRandom(categoryFiles.outerwear) : null;
-    
+
+    let outerwear = null;
+    if (hasOuterwear) {
+      const shouldUseOuterwear = !isHotWeather && !isSnowyWeather && (isColdWeather || isRainyWeather || Math.random() < 0.3);
+      outerwear = shouldUseOuterwear ? pickRandom(categoryFiles.outerwear) : null;
+    }
+
     const key = `${top.url}|${bottom ? bottom.url : 'nobottom'}|${shoe.url}|${outerwear ? outerwear.url : 'noouterwear'}`;
     if (!usedCombos.has(key)) {
       usedCombos.add(key);
@@ -1048,7 +1090,8 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
     const response = await fetch('/api/outfit/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(outfitData)
+      body: JSON.stringify(outfitData),
+      credentials: 'same-origin'
     });
     const data = await response.json();
     if (response.ok) {
@@ -1056,19 +1099,14 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
       btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
       if (window.location.pathname === '/profile') {
         try {
-          await fetch('/api/outfit/get-all');
+          await fetch('/api/outfit/get-all', { credentials: 'same-origin' });
         } catch (error) {
           console.warn('Could not refresh wardrobe after save:', error);
         }
-      } else if (window.location.pathname === '/') {
-        try {
-          const profilePage = window.open('/profile', '_blank', 'noopener,noreferrer');
-          if (profilePage) {
-            profilePage.opener = null;
-          }
-        } catch (error) {
-          console.warn('Could not open profile after save:', error);
-        }
+      } else {
+        alert('✓ Outfit saved to your wardrobe! Opening your profile to show it.');
+        window.location.assign('/profile');
+        return;
       }
       alert('✓ Outfit saved to your wardrobe!');
     } else {

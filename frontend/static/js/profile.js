@@ -1,7 +1,7 @@
 // Fetch and display user profile data
 async function loadProfile() {
   try {
-    const authResponse = await fetch('/api/auth/status');
+    const authResponse = await fetch('/api/auth/status', { credentials: 'same-origin' });
     const authData = await authResponse.json();
 
     if (!authData.authenticated) {
@@ -30,7 +30,7 @@ async function loadProfile() {
 // Load user preferences
 async function loadPreferences() {
   try {
-    const response = await fetch('/api/user/preferences');
+    const response = await fetch('/api/user/preferences', { credentials: 'same-origin' });
     const data = await response.json();
 
     if (data.preferences) {
@@ -61,7 +61,7 @@ async function loadPreferences() {
 // Load recommendations based on style — with fashion images
 async function loadRecommendations() {
   try {
-    const response = await fetch('/api/recommendations');
+    const response = await fetch('/api/recommendations', { credentials: 'same-origin' });
     const data = await response.json();
 
     const container = document.getElementById('recommendationsContainer');
@@ -107,7 +107,7 @@ const occasionIcons = {
 // Load saved outfits (wardrobe) — shows exact items saved, no stock photos
 async function loadWardrobe() {
   try {
-    const response = await fetch('/api/outfit/get-all');
+    const response = await fetch('/api/outfit/get-all', { credentials: 'same-origin' });
     const data = await response.json();
 
     const container = document.getElementById('wardrobeContainer');
@@ -261,7 +261,8 @@ async function deleteOutfit(outfitId) {
 
   try {
     const response = await fetch(`/api/outfit/delete/${outfitId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      credentials: 'same-origin'
     });
     const data = await response.json();
 
