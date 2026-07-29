@@ -79,6 +79,10 @@ class Outfit(db.Model):
     ai_note = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'occasion', 'item_data', name='uq_user_outfit_signature'),
+    )
+
     def to_dict(self):
         items = None
         if self.item_data:
@@ -101,5 +105,26 @@ class Outfit(db.Model):
             'items': items,
             'weather': self.weather,
             'aiNote': self.ai_note,
+            'createdAt': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class WardrobeItem(db.Model):
+    """User-specific wardrobe items uploaded through the homepage flow."""
+    __tablename__ = 'wardrobe_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    image_data = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'category': self.category,
+            'name': self.name,
+            'imageData': self.image_data,
             'createdAt': self.created_at.isoformat() if self.created_at else None
         }

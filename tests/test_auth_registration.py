@@ -120,6 +120,88 @@ def test_saved_outfits_are_available_on_the_profile_wardrobe(client):
     assert payload['outfits'][0]['items']['top']['name'] == 'White Tee'
 
 
+def test_duplicate_outfits_are_not_saved_twice(client):
+    client.post(
+        '/api/auth/register',
+        json={
+            'firstName': 'Duplicate',
+            'lastName': 'User',
+            'email': 'duplicate@example.com',
+            'password': 'password123',
+            'consent': True,
+        }
+    )
+
+    payload = {
+        'occasion': 'Casual Day Out',
+        'items': {
+            'outerwear': {'name': 'Light Jacket', 'url': 'https://example.com/jacket.jpg'},
+            'top': {'name': 'White Tee', 'url': 'https://example.com/top.jpg'},
+            'bottom': {'name': 'Blue Jeans', 'url': 'https://example.com/bottom.jpg'},
+            'shoes': {'name': 'Sneakers', 'url': 'https://example.com/shoes.jpg'}
+        },
+        'weather': 'Sunny, 24°C',
+        'aiNote': 'Relaxed daytime look'
+    }
+
+    first_response = client.post('/api/outfit/save', json=payload)
+    second_response = client.post('/api/outfit/save', json=payload)
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 200
+    assert second_response.get_json()['message'] == 'Outfit already saved'
+
+
+def test_wardrobe_items_are_isolated_per_user(client):
+    user_one = client.post(
+        '/api/auth/register',
+        json={
+            'firstName': 'User',
+            'lastName': 'One',
+            'email': 'user1@example.com',
+            'password': 'password123',
+            'consent': True,
+        }
+    )
+    assert user_one.status_code == 201
+
+    user_two = client.post(
+        '/api/auth/register',
+        json={
+            'firstName': 'User',
+            'lastName': 'Two',
+            'email': 'user2@example.com',
+            'password': 'password123',
+            'consent': True,
+        }
+    )
+    assert user_two.status_code == 201
+
+    client.post(
+        '/api/wardrobe/items',
+        json={
+            'category': 'tops',
+            'name': 'User One Top',
+            'imageData': 'data:image/jpeg;base64,abc123'
+        }
+    )
+
+    client.post(
+        '/api/wardrobe/items',
+        json={
+            'category': 'tops',
+            'name': 'User Two Top',
+            'imageData': 'data:image/jpeg;base64,def456'
+        }
+    )
+
+    first_response = client.get('/api/wardrobe/items')
+    assert first_response.status_code == 200
+    payload = first_response.get_json()
+    assert payload['totalItems'] == 1
+    assert payload['items'][0]['name'] == 'User One Top'
+
+
 def test_auth_register_bootstraps_missing_tables_before_request(tmp_path, monkeypatch):
     db_dir = tmp_path / 'instance'
     db_dir.mkdir(parents=True, exist_ok=True)

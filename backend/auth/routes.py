@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from flask import Blueprint, jsonify, request, session
 
 from backend.clip import cosine_similarity, get_image_embedding, get_text_embedding
-from backend.common.models import Outfit, User, db
+from backend.common.models import Outfit, User, WardrobeItem, db
 
 auth = Blueprint('auth', __name__)
 
@@ -252,6 +252,20 @@ def save_outfit():
             return json.dumps(item)
         return str(item)
 
+    signature = json.dumps({
+        "occasion": data.get("occasion", ""),
+        "items": items,
+        "weather": data.get("weather", ""),
+        "aiNote": data.get("aiNote", "")
+    }, sort_keys=True)
+
+    existing_outfit = Outfit.query.filter_by(user_id=user_id).filter(
+        Outfit.occasion == data.get("occasion", "")
+    ).filter(Outfit.item_data == json.dumps(items)).first()
+
+    if existing_outfit:
+        return jsonify({"message": "Outfit already saved", "outfit": existing_outfit.to_dict()}), 200
+
     outfit = Outfit(
         user_id=user_id,
         occasion=data.get("occasion", ""),
@@ -304,6 +318,42 @@ def delete_outfit(outfit_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Failed to delete outfit: {str(e)}"}), 500
+
+
+@auth.route('/api/wardrobe/items', methods=['POST'])
+def save_wardrobe_item():
+    user_id = session.get('user_id')
+
+    if not user_id:
+        return jsonify({"message": "User not authenticated. Please login first."}), 401
+
+    data = request.get_json(silent=True) or {}
+    category = (data.get('category') or '').strip().lower()
+    name = (data.get('name') or '').strip()
+    image_data = (data.get('imageData') or '').strip()
+
+    if not category or not name or not image_data:
+        return jsonify({"message": "Category, name, and image data are required."}), 400
+
+    try:
+        item = WardrobeItem(user_id=user_id, category=category, name=name, image_data=image_data)
+        db.session.add(item)
+        db.session.commit()
+        return jsonify({"message": "Wardrobe item saved", "item": item.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Failed to save wardrobe item: {str(e)}"}), 500
+
+
+@auth.route('/api/wardrobe/items', methods=['GET'])
+def get_wardrobe_items():
+    user_id = session.get('user_id')
+
+    if not user_id:
+        return jsonify({"message": "User not authenticated. Please login first."}), 401
+
+    items = WardrobeItem.query.filter_by(user_id=user_id).order_by(WardrobeItem.created_at.desc()).all()
+    return jsonify({"items": [item.to_dict() for item in items], "totalItems": len(items)}), 200
 
 
 @auth.route('/api/auth/logout', methods=['POST'])

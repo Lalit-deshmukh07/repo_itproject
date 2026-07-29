@@ -20,6 +20,39 @@ let categoryFiles = {
 let chosenOutfit = null;
 let userAuthenticated = false;
 let currentUserStorageKey = null;
+let lastGeneratedOutfits = [];
+let lastGeneratedMeta = { occasion: '', aiNote: '', vibe: '' };
+let savedOutfitKeys = new Set();
+
+function showInlineStatus(message, type = 'success') {
+  let toast = document.getElementById('saveToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'saveToast';
+    toast.style.position = 'fixed';
+    toast.style.right = '20px';
+    toast.style.bottom = '20px';
+    toast.style.zIndex = '9999';
+    toast.style.padding = '12px 16px';
+    toast.style.borderRadius = '999px';
+    toast.style.fontWeight = '700';
+    toast.style.boxShadow = '0 10px 24px rgba(0,0,0,0.18)';
+    toast.style.maxWidth = '320px';
+    toast.style.transition = 'opacity 0.2s ease';
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+  toast.style.color = 'white';
+  toast.style.opacity = '1';
+
+  clearTimeout(showInlineStatus.timer);
+  showInlineStatus.timer = setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 2200);
+}
+window.showToast = showInlineStatus;
 
 // Current weather data (updated by loadWeather)
 let currentWeather = { temp: null, feelsLike: null, condition: 'Clear', city: '', shortTerm: null };
@@ -639,6 +672,22 @@ if (occasion) {
 
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
+  const saved = sessionStorage.getItem('wearitright_last_recommendations');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed?.outfits?.length) {
+        lastGeneratedOutfits = parsed.outfits;
+        lastGeneratedMeta = parsed.meta || {}; 
+        renderOutfitOptions(lastGeneratedOutfits, lastGeneratedMeta.occasion || 'Casual Day Out', lastGeneratedMeta.aiNote || '', lastGeneratedMeta.vibe || '');
+        recommendationSection.hidden = false;
+        if (selectedOccasion) selectedOccasion.textContent = lastGeneratedMeta.occasion || 'Your outfit';
+      }
+    } catch (error) {
+      console.warn('Could not restore recommendations from session:', error);
+    }
+  }
+
   await checkAuthStatus();
   setupCategoryUploads();
   setupGenerateMoreBtn();
@@ -653,6 +702,36 @@ function resetWardrobeState() {
       listContainer.innerHTML = '';
     }
   });
+}
+
+async function loadWardrobeFromServer() {
+  if (!userAuthenticated) {
+    resetWardrobeState();
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/wardrobe/items', { credentials: 'same-origin' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Could not load wardrobe');
+
+    resetWardrobeState();
+    const items = Array.isArray(data.items) ? data.items : [];
+    items.forEach(item => {
+      if (!item || !item.category) return;
+      const category = item.category.toLowerCase();
+      if (categoryFiles[category] !== undefined) {
+        categoryFiles[category].push({ url: item.imageData, name: item.name });
+      }
+    });
+
+    Object.keys(categoryFiles).forEach(category => {
+      renderThumbnails(category);
+    });
+  } catch (error) {
+    console.warn('Could not load wardrobe from server:', error);
+    resetWardrobeState();
+  }
 }
 
 // Check if user is logged in
@@ -673,9 +752,7 @@ async function checkAuthStatus() {
       resetWardrobeState();
     }
 
-    if (currentUserStorageKey) {
-      restoreFromStorage();
-    }
+    await loadWardrobeFromServer();
   } catch (error) {
     console.log('Auth check failed:', error);
     userAuthenticated = false;
@@ -713,12 +790,13 @@ function handleCategoryUpload(category, files) {
       try {
         resizeImage(e.target.result, 400, (dataUrl) => {
           try {
-            categoryFiles[category].push({ url: dataUrl, name: file.name });
+            const entry = { url: dataUrl, name: file.name };
+            categoryFiles[category].push(entry);
             processed++;
             
             // Render and save immediately after each file
             renderThumbnails(category);
-            saveToStorage();
+            saveToStorage(category, entry);
           } catch (err) {
             console.error('Error processing image:', err);
           }
@@ -785,56 +863,32 @@ function renderThumbnails(category) {
 function removeUploadedItem(category, index) {
   categoryFiles[category].splice(index, 1);
   renderThumbnails(category);
-  saveToStorage();            // ← update storage after removal
 }
 
 // ─── LOCALSTORAGE PERSISTENCE ────────────────────────────
 const STORAGE_KEY_PREFIX = 'wearitright_wardrobe_v4_user';
 
-function saveToStorage() {
-  try {
-    if (!currentUserStorageKey) return;
+async function saveToStorage(category, entry) {
+  if (!userAuthenticated) return;
 
-    const data = {};
-    ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
-      data[cat] = categoryFiles[cat].map(f => ({ url: f.url, name: f.name }));
+  try {
+    await fetch('/api/wardrobe/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category,
+        name: entry.name,
+        imageData: entry.url
+      }),
+      credentials: 'same-origin'
     });
-    localStorage.setItem(currentUserStorageKey, JSON.stringify(data));
   } catch (e) {
-    console.warn('Storage full — not all images saved:', e);
+    console.warn('Could not save wardrobe item to server:', e);
   }
 }
 
 function restoreFromStorage() {
-  try {
-    if (!currentUserStorageKey) {
-      resetWardrobeState();
-      return;
-    }
-
-    const raw = localStorage.getItem(currentUserStorageKey);
-    if (!raw) {
-      resetWardrobeState();
-      return;
-    }
-
-    const data = JSON.parse(raw);
-    ['tops', 'bottoms', 'dresses', 'shoes', 'outerwear'].forEach(cat => {
-      if (data[cat] && data[cat].length > 0) {
-        categoryFiles[cat] = data[cat];
-        renderThumbnails(cat);
-      } else {
-        categoryFiles[cat] = [];
-        const listContainer = document.getElementById(`${cat}List`);
-        if (listContainer) {
-          listContainer.innerHTML = '';
-        }
-      }
-    });
-  } catch (e) {
-    console.warn('Could not restore from storage:', e);
-    resetWardrobeState();
-  }
+  loadWardrobeFromServer();
 }
 
 // Validate that we have required categories
@@ -959,6 +1013,9 @@ function generateOutfitCombination() {
   if (weatherBadge) weatherBadge.textContent = weatherDisplay;
 
   chosenOutfit = null;
+  lastGeneratedOutfits = outfits;
+  lastGeneratedMeta = { occasion: occ, aiNote, vibe };
+  sessionStorage.setItem('wearitright_last_recommendations', JSON.stringify({ outfits, meta: lastGeneratedMeta }));
   renderOutfitOptions(outfits, occ, aiNote, vibe);
 
   recommendationSection.hidden = false;
@@ -1049,8 +1106,12 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
     return;
   }
 
-  const outfits = outfitOptionsGrid._outfits;
+  const outfits = outfitOptionsGrid._outfits || lastGeneratedOutfits;
   const outfit = outfits[index];
+  if (!outfit) {
+    alert('Please generate a new set of recommendations before saving.');
+    return;
+  }
 
   const outfitData = {
     occasion: occ,
@@ -1083,6 +1144,21 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
   if (selectedCard) selectedCard.classList.add('selected');
 
   const btn = selectedCard.querySelector('.choose-btn');
+  const outfitKey = JSON.stringify({
+    occasion: occ,
+    items: outfitData.items,
+    weather: outfitData.weather,
+    aiNote: outfitData.aiNote
+  });
+
+  if (savedOutfitKeys.has(outfitKey)) {
+    btn.textContent = '✓ Saved';
+    btn.disabled = true;
+    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    alert('This outfit has already been saved in this session.');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
@@ -1095,20 +1171,19 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
     });
     const data = await response.json();
     if (response.ok) {
+      savedOutfitKeys.add(outfitKey);
       btn.textContent = '✓ Saved!';
       btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-      if (window.location.pathname === '/profile') {
-        try {
-          await fetch('/api/outfit/get-all', { credentials: 'same-origin' });
-        } catch (error) {
-          console.warn('Could not refresh wardrobe after save:', error);
-        }
+      if (data.message === 'Outfit already saved') {
+        btn.textContent = '✓ Saved';
+        btn.disabled = true;
+        showInlineStatus('This outfit was already saved.', 'error');
       } else {
-        alert('✓ Outfit saved to your wardrobe! Opening your profile to show it.');
-        window.location.assign('/profile');
-        return;
+        const successMessage = 'Outfit saved successfully';
+        if (typeof window.showToast === 'function') {
+          window.showToast(successMessage);
+        }
       }
-      alert('✓ Outfit saved to your wardrobe!');
     } else {
       btn.textContent = '💾 Save This Outfit';
       btn.disabled = false;
@@ -1118,7 +1193,7 @@ async function chooseOutfit(index, occ, aiNote, vibe) {
     console.error('Error saving outfit:', err);
     btn.textContent = '💾 Save This Outfit';
     btn.disabled = false;
-    alert('Failed to save outfit. Please try again.');
+    showInlineStatus('Failed to save outfit. Please try again.', 'error');
   }
 }
 

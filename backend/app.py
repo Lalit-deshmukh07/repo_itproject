@@ -55,6 +55,16 @@ def _ensure_outfit_schema():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS wardrobe_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                category TEXT NOT NULL,
+                name TEXT NOT NULL,
+                image_data TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='outfits'")
         if not cursor.fetchone():
@@ -69,6 +79,10 @@ def _ensure_outfit_schema():
             cursor.execute("ALTER TABLE outfits ADD COLUMN item_data TEXT")
         if 'ai_note' not in columns:
             cursor.execute("ALTER TABLE outfits ADD COLUMN ai_note TEXT")
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='uq_user_outfit_signature'")
+        if not cursor.fetchone():
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_user_outfit_signature ON outfits (user_id, occasion, item_data)")
         conn.commit()
 
 
@@ -146,13 +160,13 @@ def create_app():
     @app.route('/profile')
     def profile():
         if not _is_authenticated():
-            return redirect(url_for('login', next=request.path))
+            return redirect(url_for('login', next=request.path), code=307)
         return render_template('profile.html')
 
     @app.route('/recommendations')
     def recommendations():
         if not _is_authenticated():
-            return redirect(url_for('login', next=request.path))
+            return redirect(url_for('login', next=request.path), code=307)
         return render_template('recommendations.html')
 
     @app.after_request
