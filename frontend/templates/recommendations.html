@@ -243,14 +243,16 @@
     recs.forEach((rec, idx) => {
       const card = document.createElement('div');
       card.className = 'rec-card';
-      const styleKey = (rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'style';
+      const styleKey = rec.matchedStyle || ((rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'style');
+      const genderKey = rec.matchedGender || 'diverse';
       card.dataset.style = styleKey;
       card.innerHTML = `
         <img src="${rec.modelImage || rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'}"
              alt="${rec.title}" class="rec-card-img"
              onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'">
         <div class="rec-card-body">
-          <span class="rec-style-tag">${styleKey}</span>
+          <span class="rec-style-tag">Matched Gender: ${genderKey}</span>
+          <span class="rec-style-tag">Matched Style: ${styleKey}</span>
           <div class="rec-score">${rec.matchPercentage ? `Match ${rec.matchPercentage}%` : 'Match not scored'}</div>
           <h3>${rec.title}</h3>
           <p>${rec.description}</p>
@@ -267,7 +269,7 @@
       p.classList.toggle('active', p.dataset.filter === filter);
     });
     const filteredRecs = filter === 'all' ? allRecs : allRecs.filter(rec => {
-      const styleKey = (rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'casual';
+      const styleKey = rec.matchedStyle || ((rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'casual');
       return styleKey === filter;
     });
     renderCards(filteredRecs);

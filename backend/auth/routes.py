@@ -657,6 +657,10 @@ def get_recommendations():
         recommendations.sort(key=lambda item: item.get('clipScore', 0), reverse=True)
         top_recommendations = recommendations[:5]
 
+        for rec in top_recommendations:
+            rec['matchedGender'] = gender_pref
+            rec['matchedStyle'] = (rec.get('styles') or [None])[0]
+
         return jsonify({
             "recommendations": top_recommendations,
             "userStyles": styles,
