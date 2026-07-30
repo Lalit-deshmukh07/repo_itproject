@@ -170,92 +170,6 @@
         box-shadow: 0 14px 30px rgba(79,70,229,0.24);
       }
 
-    /* ── Modal ── */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      background: white;
-      border-radius: 20px;
-      max-width: 860px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-      animation: modalIn 0.3s ease;
-    }
-    @keyframes modalIn {
-      from { opacity:0; transform: scale(0.92) translateY(20px); }
-      to   { opacity:1; transform: scale(1) translateY(0); }
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 24px 28px 16px;
-      border-bottom: 1px solid #f3f4f6;
-      position: sticky;
-      top: 0;
-      background: white;
-      z-index: 1;
-    }
-    .modal-header h2 { font-size: 22px; font-weight: 800; color: #1f2937; margin-bottom: 4px; }
-    .modal-header p  { font-size: 14px; color: #6b7280; }
-    .modal-close {
-      background: #f3f4f6;
-      border: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-    .modal-close:hover { background: #e5e7eb; }
-    .modal-gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      padding: 20px 28px 28px;
-    }
-    .gallery-item {
-      border-radius: 14px;
-      overflow: hidden;
-      aspect-ratio: 3/4;
-      position: relative;
-    }
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.4s ease;
-    }
-    .gallery-item:hover img { transform: scale(1.06); }
-    .gallery-item-caption {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-      color: white;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 20px 12px 10px;
-    }
-
     .no-recs-msg {
       text-align: center;
       padding: 80px 20px;
@@ -271,13 +185,9 @@
       .filter-bar { padding: 20px 16px 8px; }
       .recs-section { padding: 20px 16px 40px; }
       .recs-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
-      .modal-gallery { grid-template-columns: 1fr 1fr; }
-      .modal-header { padding: 18px 20px 14px; }
-      .modal-gallery { padding: 16px 20px 24px; }
     }
     @media (max-width: 480px) {
       .recs-grid { grid-template-columns: 1fr; }
-      .modal-gallery { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -314,150 +224,11 @@
     </div>
   </section>
 
-  <!-- Modal -->
-  <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
-    <div class="modal" id="modalBox">
-      <div class="modal-header">
-        <div>
-          <h2 id="modalTitle">Look Gallery</h2>
-          <p id="modalDesc"></p>
-        </div>
-        <button class="modal-close" onclick="closeGallery()">✕</button>
-      </div>
-      <div class="modal-gallery" id="modalGallery"></div>
-    </div>
-  </div>
-
   <footer class="footer">
     <h2>WearItRight</h2>
     <p>AI-powered smart wardrobe and outfit recommendation platform.</p>
     <p class="copyright">© 2026 WearItRight. All rights reserved.</p>
   </footer>
-
-  <script>
-  // ── Curated gallery images per style tag ──
-  const STYLE_GALLERIES = {
-    casual: [
-      { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop', caption: 'Weekend casual vibes' },
-      { url: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop', caption: 'Easy summer look' },
-      { url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop', caption: 'Street casual' },
-      { url: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?w=600&auto=format&fit=crop', caption: 'Comfortable & stylish' },
-      { url: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&auto=format&fit=crop', caption: 'Everyday essentials' },
-      { url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop', caption: 'Casual chic' },
-    ],
-    formal: [
-      { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop', caption: 'Business ready' },
-      { url: 'https://images.unsplash.com/photo-1594938298603-c8148c4b4ae2?w=600&auto=format&fit=crop', caption: 'Power dressing' },
-      { url: 'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=600&auto=format&fit=crop', caption: 'Professional chic' },
-      { url: 'https://images.unsplash.com/photo-1477118476589-bff2c5c4cfbb?w=600&auto=format&fit=crop', caption: 'Boardroom look' },
-      { url: 'https://images.unsplash.com/photo-1478145046317-39f10e56b5e9?w=600&auto=format&fit=crop', caption: 'Corporate elegance' },
-      { url: 'https://images.unsplash.com/photo-1603217039863-aa0c865404f7?w=600&auto=format&fit=crop', caption: 'Smart formal' },
-    ],
-    sporty: [
-      { url: 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&auto=format&fit=crop', caption: 'Athletic vibes' },
-      { url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&auto=format&fit=crop', caption: 'Performance wear' },
-      { url: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=600&auto=format&fit=crop', caption: 'Sporty & fresh' },
-      { url: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&auto=format&fit=crop', caption: 'Active lifestyle' },
-      { url: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&auto=format&fit=crop', caption: 'Gym ready' },
-      { url: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?w=600&auto=format&fit=crop', caption: 'Sport chic' },
-    ],
-    vintage: [
-      { url: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop', caption: 'Retro 70s vibes' },
-      { url: 'https://images.unsplash.com/photo-1551803091-e20673f15770?w=600&auto=format&fit=crop', caption: 'Nostalgic charm' },
-      { url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop', caption: 'Classic vintage' },
-      { url: 'https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?w=600&auto=format&fit=crop', caption: 'Throwback style' },
-      { url: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop', caption: 'Retro florals' },
-      { url: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop', caption: 'Vintage glam' },
-    ],
-    streetwear: [
-      { url: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=600&auto=format&fit=crop', caption: 'Street edge' },
-      { url: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop', caption: 'Urban cool' },
-      { url: 'https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=600&auto=format&fit=crop', caption: 'Streetwear vibes' },
-      { url: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?w=600&auto=format&fit=crop', caption: 'NYC street style' },
-      { url: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop', caption: 'Bold & graphic' },
-      { url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop', caption: 'Hype culture' },
-    ],
-    minimalist: [
-      { url: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=600&auto=format&fit=crop', caption: 'Clean simplicity' },
-      { url: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&auto=format&fit=crop', caption: 'Less is more' },
-      { url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop', caption: 'Monochrome magic' },
-      { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop', caption: 'Neutral palette' },
-      { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop', caption: 'Quiet luxury' },
-      { url: 'https://images.unsplash.com/photo-1477118476589-bff2c5c4cfbb?w=600&auto=format&fit=crop', caption: 'Understated elegance' },
-    ],
-    bohemian: [
-      { url: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop', caption: 'Boho goddess' },
-      { url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop', caption: 'Free spirit' },
-      { url: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop', caption: 'Festival vibes' },
-      { url: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop', caption: 'Flowy & floral' },
-      { url: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop', caption: 'Earthy tones' },
-      { url: 'https://images.unsplash.com/photo-1551803091-e20673f15770?w=600&auto=format&fit=crop', caption: 'Wanderlust style' },
-    ],
-    preppy: [
-      { url: 'https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=600&auto=format&fit=crop', caption: 'Campus classics' },
-      { url: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop', caption: 'Plaid & polished' },
-      { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop', caption: 'Clean-cut prep' },
-      { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop', caption: 'East coast charm' },
-      { url: 'https://images.unsplash.com/photo-1477118476589-bff2c5c4cfbb?w=600&auto=format&fit=crop', caption: 'Ivy league' },
-      { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop', caption: 'Nautical stripes' },
-    ],
-    edgy: [
-      { url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop', caption: 'Leather & dark tones' },
-      { url: 'https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?w=600&auto=format&fit=crop', caption: 'Rock chic' },
-      { url: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=600&auto=format&fit=crop', caption: 'Bold statements' },
-      { url: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop', caption: 'Dark aesthetic' },
-      { url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop', caption: 'Punk influence' },
-      { url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop', caption: 'Rebel with style' },
-    ],
-    romantic: [
-      { url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&auto=format&fit=crop', caption: 'Soft & feminine' },
-      { url: 'https://images.unsplash.com/photo-1519657337289-077653f724ed?w=600&auto=format&fit=crop', caption: 'Lace & florals' },
-      { url: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop', caption: 'Dreamy pastels' },
-      { url: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop', caption: 'Floral romance' },
-      { url: 'https://images.unsplash.com/photo-1551803091-e20673f15770?w=600&auto=format&fit=crop', caption: 'Delicate details' },
-      { url: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop', caption: 'Garden party look' },
-    ],
-    classic: [
-      { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop', caption: 'Timeless elegance' },
-      { url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop', caption: 'Parisian chic' },
-      { url: 'https://images.unsplash.com/photo-1477118476589-bff2c5c4cfbb?w=600&auto=format&fit=crop', caption: 'French girl style' },
-      { url: 'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=600&auto=format&fit=crop', caption: 'Wardrobe staples' },
-      { url: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=600&auto=format&fit=crop', caption: 'Signature classics' },
-      { url: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&auto=format&fit=crop', caption: 'Understated polish' },
-    ],
-    experimental: [
-      { url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop', caption: 'Avant-garde' },
-      { url: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=600&auto=format&fit=crop', caption: 'Mixed prints' },
-      { url: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop', caption: 'Fashion forward' },
-      { url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop', caption: 'Bold silhouettes' },
-      { url: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop', caption: 'Unexpected combos' },
-      { url: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop', caption: 'Statement making' },
-    ],
-  };
-
-  // Map style tag in recommendation to gallery key
-  function resolveStyleKey(title, styles) {
-    if (!styles || styles.length === 0) return 'casual';
-    const s = styles[0].toLowerCase();
-    return STYLE_GALLERIES[s] ? s : 'casual';
-  }
-
-  // Detect style from rec title
-  function inferStyleFromTitle(title) {
-    const t = title.toLowerCase();
-    if (t.includes('boho') || t.includes('bohemian') || t.includes('free spirit')) return 'bohemian';
-    if (t.includes('retro') || t.includes('vintage') || t.includes('nostalg')) return 'vintage';
-    if (t.includes('preppy') || t.includes('campus') || t.includes('ivy')) return 'preppy';
-    if (t.includes('edgy') || t.includes('rock') || t.includes('leather')) return 'edgy';
-    if (t.includes('romantic') || t.includes('dreamy') || t.includes('lace')) return 'romantic';
-    if (t.includes('classic') || t.includes('parisian') || t.includes('timeless')) return 'classic';
-    if (t.includes('experiment') || t.includes('avant') || t.includes('bold')) return 'experimental';
-    if (t.includes('minimal') || t.includes('simple') || t.includes('under')) return 'minimalist';
-    if (t.includes('sport') || t.includes('athlet') || t.includes('active')) return 'sporty';
-    if (t.includes('street') || t.includes('urban') || t.includes('hype')) return 'streetwear';
-    if (t.includes('office') || t.includes('suit') || t.includes('elegant') || t.includes('business') || t.includes('professional') || t.includes('power')) return 'formal';
-    return 'casual';
-  }
 
   let allRecs = [];
   let activeFilter = 'all';
@@ -470,9 +241,9 @@
       return;
     }
     recs.forEach((rec, idx) => {
-      const styleKey = rec.styles ? resolveStyleKey(rec.title, rec.styles) : inferStyleFromTitle(rec.title);
       const card = document.createElement('div');
       card.className = 'rec-card';
+      const styleKey = (rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'style';
       card.dataset.style = styleKey;
       card.innerHTML = `
         <img src="${rec.modelImage || rec.image || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'}"
@@ -483,44 +254,11 @@
           <div class="rec-score">${rec.matchPercentage ? `Match ${rec.matchPercentage}%` : 'Match not scored'}</div>
           <h3>${rec.title}</h3>
           <p>${rec.description}</p>
-          <button class="view-looks-btn" onclick="openGallery(${idx})">👁 View Outfit Looks</button>
         </div>
       `;
       grid.appendChild(card);
     });
   }
-
-  function openGallery(idx) {
-    const rec = allRecs[idx];
-    const styleKey = rec.styles ? resolveStyleKey(rec.title, rec.styles) : inferStyleFromTitle(rec.title);
-    const images = STYLE_GALLERIES[styleKey] || STYLE_GALLERIES.casual;
-
-    document.getElementById('modalTitle').textContent = rec.title;
-    document.getElementById('modalDesc').textContent = rec.description;
-
-    const gallery = document.getElementById('modalGallery');
-    gallery.innerHTML = images.map(img => `
-      <div class="gallery-item">
-        <img src="${img.url}" alt="${img.caption}"
-             onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop'">
-        <div class="gallery-item-caption">${img.caption}</div>
-      </div>
-    `).join('');
-
-    document.getElementById('modalBackdrop').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeGallery() {
-    document.getElementById('modalBackdrop').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function closeModal(e) {
-    if (e.target === document.getElementById('modalBackdrop')) closeGallery();
-  }
-
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGallery(); });
 
   // ── Filter logic ──
   function applyFilter(filter) {
@@ -528,13 +266,8 @@
     document.querySelectorAll('.filter-pill').forEach(p => {
       p.classList.toggle('active', p.dataset.filter === filter);
     });
-    const filtered = filter === 'all' ? allRecs : allRecs.filter((_, i) => {
-      const cards = document.querySelectorAll('.rec-card');
-      return cards[i] && cards[i].dataset.style === filter;
-    });
-    // Simpler: filter based on style key
     const filteredRecs = filter === 'all' ? allRecs : allRecs.filter(rec => {
-      const styleKey = rec.styles ? resolveStyleKey(rec.title, rec.styles) : inferStyleFromTitle(rec.title);
+      const styleKey = (rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'casual';
       return styleKey === filter;
     });
     renderCards(filteredRecs);
@@ -555,9 +288,7 @@
       allRecs = data.recommendations || [];
 
       // Build filter pills from unique styles
-      const styleKeys = [...new Set(allRecs.map(rec =>
-        rec.styles ? resolveStyleKey(rec.title, rec.styles) : inferStyleFromTitle(rec.title)
-      ))];
+      const styleKeys = [...new Set(allRecs.map(rec => (rec.styles && rec.styles.length > 0) ? rec.styles[0] : 'casual'))];
       const filterBar = document.getElementById('filterBar');
       styleKeys.forEach(s => {
         const btn = document.createElement('button');
