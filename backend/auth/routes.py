@@ -432,6 +432,15 @@ def get_recommendations():
         if not user:
             return jsonify({"message": "User not found"}), 404
 
+        wardrobe_count = WardrobeItem.query.filter_by(user_id=user_id).count()
+        if wardrobe_count == 0:
+            return jsonify({
+                "recommendations": [],
+                "userStyles": user.get_style_preferences(),
+                "gender": _normalize_gender(getattr(user, 'gender', None)),
+                "message": "Upload wardrobe items first, then request recommendations."
+            }), 200
+
         styles = user.get_style_preferences()
         recommendations = []
 

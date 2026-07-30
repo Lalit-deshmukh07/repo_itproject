@@ -145,6 +145,31 @@
       box-shadow: 0 6px 20px rgba(79,70,229,0.3);
     }
 
+      .generate-recs-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 18px 40px 0;
+        background: #fafbfc;
+      }
+
+      .generate-recs-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 24px rgba(79,70,229,0.18);
+      }
+
+      .generate-recs-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(79,70,229,0.24);
+      }
+
     /* ── Modal ── */
     .modal-backdrop {
       display: none;
@@ -279,9 +304,13 @@
     <!-- pills added dynamically -->
   </div>
 
+  <div class="generate-recs-wrap">
+    <button id="generateRecsBtn" class="generate-recs-btn" type="button">Generate Styling Recommendations</button>
+  </div>
+
   <section class="recs-section">
     <div class="recs-grid" id="recsGrid">
-      <p style="color:#6b7280; grid-column:1/-1; text-align:center; padding:60px 20px;">Loading recommendations…</p>
+      <p style="color:#6b7280; grid-column:1/-1; text-align:center; padding:60px 20px;">Upload wardrobe items, then click generate to see recommendations.</p>
     </div>
   </section>
 
@@ -555,7 +584,7 @@
     window.location.href = '/login';
   });
 
-  document.addEventListener('DOMContentLoaded', loadRecs);
+  document.getElementById('generateRecsBtn')?.addEventListener('click', loadRecs);
   </script>
 </body>
 </html>

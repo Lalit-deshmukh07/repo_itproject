@@ -17,9 +17,6 @@ async function loadProfile() {
     // Load preferences
     await loadPreferences();
 
-    // Load recommendations
-    await loadRecommendations();
-
     // Load wardrobe (saved outfits)
     await loadWardrobe();
   } catch (error) {
@@ -66,6 +63,8 @@ async function loadRecommendations() {
 
     const container = document.getElementById('recommendationsContainer');
     container.innerHTML = '';
+    const section = document.getElementById('recommendations');
+    if (section) section.hidden = false;
 
     if (data.recommendations && data.recommendations.length > 0) {
       data.recommendations.forEach(rec => {
@@ -86,7 +85,7 @@ async function loadRecommendations() {
         container.appendChild(card);
       });
     } else {
-      container.innerHTML = '<p class="no-recs">Complete your profile to get personalised recommendations!</p>';
+      container.innerHTML = `<p class="no-recs">${data.message || 'Upload wardrobe items, then click generate to see recommendations.'}</p>`;
     }
   } catch (error) {
     console.error('Error loading recommendations:', error);
@@ -94,6 +93,10 @@ async function loadRecommendations() {
       '<p style="color:#ef4444;">Could not load recommendations.</p>';
   }
 }
+
+document.getElementById('generateRecommendationsBtn')?.addEventListener('click', async () => {
+  await loadRecommendations();
+});
 
 // Occasion icons for wardrobe cards
 const occasionIcons = {

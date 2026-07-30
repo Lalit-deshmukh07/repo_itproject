@@ -24,6 +24,42 @@ let lastGeneratedOutfits = [];
 let lastGeneratedMeta = { occasion: '', aiNote: '', vibe: '' };
 let savedOutfitKeys = new Set();
 
+function getRecommendationsStorageKey() {
+  return currentUserStorageKey ? `wearitright_last_recommendations_${currentUserStorageKey}` : null;
+}
+
+function resetRecommendationsView() {
+  lastGeneratedOutfits = [];
+  lastGeneratedMeta = { occasion: '', aiNote: '', vibe: '' };
+  chosenOutfit = null;
+  if (outfitOptionsGrid) outfitOptionsGrid.innerHTML = '';
+  if (recommendationSection) recommendationSection.hidden = true;
+  if (selectedOccasion) selectedOccasion.textContent = 'Your outfit';
+  const weatherBadge = document.getElementById('weatherBadge');
+  if (weatherBadge) weatherBadge.textContent = 'Cloudy, 18°C';
+}
+
+function restoreRecommendationsView() {
+  const storageKey = getRecommendationsStorageKey();
+  if (!storageKey) return;
+
+  const saved = sessionStorage.getItem(storageKey);
+  if (!saved) return;
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed?.outfits?.length) {
+      lastGeneratedOutfits = parsed.outfits;
+      lastGeneratedMeta = parsed.meta || {};
+      renderOutfitOptions(lastGeneratedOutfits, lastGeneratedMeta.occasion || 'Casual Day Out', lastGeneratedMeta.aiNote || '', lastGeneratedMeta.vibe || '');
+      recommendationSection.hidden = false;
+      if (selectedOccasion) selectedOccasion.textContent = lastGeneratedMeta.occasion || 'Your outfit';
+    }
+  } catch (error) {
+    console.warn('Could not restore recommendations from session:', error);
+  }
+}
+
 function showInlineStatus(message, type = 'success') {
   let toast = document.getElementById('saveToast');
   if (!toast) {
@@ -672,22 +708,6 @@ if (occasion) {
 
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
-  const saved = sessionStorage.getItem('wearitright_last_recommendations');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed?.outfits?.length) {
-        lastGeneratedOutfits = parsed.outfits;
-        lastGeneratedMeta = parsed.meta || {}; 
-        renderOutfitOptions(lastGeneratedOutfits, lastGeneratedMeta.occasion || 'Casual Day Out', lastGeneratedMeta.aiNote || '', lastGeneratedMeta.vibe || '');
-        recommendationSection.hidden = false;
-        if (selectedOccasion) selectedOccasion.textContent = lastGeneratedMeta.occasion || 'Your outfit';
-      }
-    } catch (error) {
-      console.warn('Could not restore recommendations from session:', error);
-    }
-  }
-
   await checkAuthStatus();
   setupCategoryUploads();
   setupGenerateMoreBtn();
@@ -750,14 +770,17 @@ async function checkAuthStatus() {
 
     if (userChanged) {
       resetWardrobeState();
+      resetRecommendationsView();
     }
 
     await loadWardrobeFromServer();
+    restoreRecommendationsView();
   } catch (error) {
     console.log('Auth check failed:', error);
     userAuthenticated = false;
     currentUserStorageKey = null;
     resetWardrobeState();
+    resetRecommendationsView();
   }
 }
 
@@ -1015,7 +1038,10 @@ function generateOutfitCombination() {
   chosenOutfit = null;
   lastGeneratedOutfits = outfits;
   lastGeneratedMeta = { occasion: occ, aiNote, vibe };
-  sessionStorage.setItem('wearitright_last_recommendations', JSON.stringify({ outfits, meta: lastGeneratedMeta }));
+  const recommendationsStorageKey = getRecommendationsStorageKey();
+  if (recommendationsStorageKey) {
+    sessionStorage.setItem(recommendationsStorageKey, JSON.stringify({ outfits, meta: lastGeneratedMeta }));
+  }
   renderOutfitOptions(outfits, occ, aiNote, vibe);
 
   recommendationSection.hidden = false;

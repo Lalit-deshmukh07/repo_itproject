@@ -162,6 +162,10 @@ body {
   margin-bottom: 60px;
 }
 
+.recommendations-section[hidden] {
+  display: none !important;
+}
+
 .section-header-row {
   display: flex;
   align-items: center;
